@@ -88,13 +88,13 @@ if (isset($_POST['register'])) {
                     <?php 
                     if ($error != '') {
                         echo '<div class="alert alert-danger" role="alert">
-                        <strong>$error</strong>
+                        <strong>'.$error.'</strong>
                     </div>';
                     }
 
                     if ($success_message != '') {
                         echo '<div class="alert alert-success" role="alert">
-                        <strong>$error</strong>
+                        <strong>'.$success_message.'</strong>
                     </div>';
                     }
                     ?>

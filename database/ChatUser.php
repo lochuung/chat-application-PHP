@@ -13,7 +13,7 @@ class ChatUser
     private $user_login_status;
     public $conn;
 
-    function __construct()
+    public function __construct()
     {
         require_once("DatabaseConnection.php");
         $db = new DatabaseConnection();
