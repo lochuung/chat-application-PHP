@@ -91,6 +91,17 @@ class ChatUser
         return false;
     }
 
+    function updateUserLoginStatus() {
+        $sql = "UPDATE chat_user_table SET user_login_status = :user_login_status WHERE user_id = :user_id";
+        $statement = $this->conn->prepare($sql);
+        $statement->bindParam(':user_login_status', $this->user_login_status);
+        $statement->bindParam(':user_id', $this->user_id);
+        if ($statement->execute()) {
+            return true;
+        }
+        return false;
+    }
+
     public function getUserId()
     {
         return $this->user_id;

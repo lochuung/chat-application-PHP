@@ -6,71 +6,65 @@ use PHPMailer\PHPMailer\Exception;
 
 require 'vendor/autoload.php';
 
+session_start();
+if (isset($_SESSION['user_data'])) {
+    header('location:chatroom.php');
+}
+
 $error = '';
 $success_message = '';
 if (isset($_POST['register'])) {
-    session_start();
-    if (isset($_SESSION['user_data'])) {
-        header('location:chatroom.php');
-    }
-
-    require_once "database/ChatUser.php";
-    $user = new ChatUser();
     if (!isset($_POST['user_name']) || strlen($_POST['user_name']) < 1) {
         $error = "Tên người dùng không được để trống.";
+    } else if (strlen($_POST['user_email']) < 1 || !filter_var($_POST['user_email'], FILTER_VALIDATE_EMAIL)) {
+        $error = 'Email không hợp lệ.';
+    } else if (strlen($_POST['user_password']) < 8) {
+        $error = 'Mật khẩu không hợp lệ';
     } else {
+        require_once "database/ChatUser.php";
+        $user = new ChatUser();
         $user->setUserName($_POST['user_name']);
-
-        if (strlen($_POST['user_email']) < 1 || !filter_var($_POST['user_email'], FILTER_VALIDATE_EMAIL)) {
-            $error = 'Email không hợp lệ.';
+        $user->setUserEmail($_POST['user_email']);
+        $user->setUserPassword(password_hash($_POST['user_password'], PASSWORD_DEFAULT));
+        $user->setUserProfile("images/placeholder.jpg");
+        $user->setUserStatus('Disable');
+        $user->setUserCreatedOn(date("Y-m-d H:i:s"));
+        $user->setUserVerificationCode(md5(uniqid()));
+        $user_data = $user->getUserDataByEmail();
+        if (is_array($user_data) && count($user_data) > 0) {
+            $error = 'Tài khoản đã tồn tại';
         } else {
-            $user->setUserEmail($_POST['user_email']);
+            if ($user->saveData()) {
+                $mail = new PHPMailer(true);
+                $mail->isSMTP();
+                $mail->Host = 'smtp.gmail.com';
+                $mail->SMTPAuth = true;
+                $mail->Username = '22110179@student.hcmute.edu.vn';
+                $mail->Password = 'TEST@123';
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                $mail->Port = 587;
+                $mail->setFrom("22110179@student.hcmute.edu.vn", "Nhom 8");
+                $mail->addAddress($user->getUserEmail());
+                $mail->isHTML(true);
 
-            if (strlen($_POST['user_password']) < 8) {
-                $error = 'Mật khẩu không hợp lệ';
+                $mail->Subject = '<p>Mã xác minh đăng ký tham gia Chat App - Nhóm 8</p>';
+
+                $verify_link = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . "{$_SERVER['HTTP_HOST']}/"
+                    . "verify.php?code=" . $user->getUserVerificationCode();
+                $mail->Body = '
+                <p>Chúng tôi chỉ cần xác minh địa chỉ email của bạn trước khi bạn có thể truy cập vào Chat App</p>
+                
+                <p>Xác minh địa chỉ email của bạn: </p> <a href="' . $verify_link . '">
+                Nhấn vào đây!
+                </a>
+                
+                <p>Cảm ơn! – Nhóm 8</p>';
+                $mail->send();
+
+                $success_message = 'Kiểm tra email được gửi tới ' . $user->getUserEmail()
+                    . ' để xác thực đăng ký.';
             } else {
-                $user->setUserPassword(md5($_POST['user_password']));
-                $user->setUserProfile("images/placeholder.jpg");
-                $user->setUserStatus('Disable');
-                $user->setUserCreatedOn(date("Y-m-d H:i:s"));
-                $user->setUserVerificationCode(md5(uniqid()));
-                $user_data = $user->getUserDataByEmail();
-                if (is_array($user_data) && count($user_data) > 0) {
-                    $error = 'Tài khoản đã tồn tại';
-                } else {
-                    if ($user->saveData()) {
-                        $mail = new PHPMailer(true);
-                        $mail->isSMTP();
-                        $mail->Host = 'smtp.gmail.com';
-                        $mail->SMTPAuth = true;
-                        $mail->Username = '22110179@student.hcmute.edu.vn';
-                        $mail->Password = 'TEST@123';
-                        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-                        $mail->Port = 587;
-                        $mail->setFrom("chatappnhom8@4onl.net", "Nhom 8");
-                        $mail->addAddress($user->getUserEmail());
-                        $mail->isHTML(true);
-
-                        $mail->Subject = '<p>Mã xác minh đăng ký tham gia Chat App - Nhóm 8</p>';
-
-                        $verify_link = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . "{$_SERVER['HTTP_HOST']}/"
-                            . "verify.php?code=" . $user->getUserVerificationCode();
-                        $mail->Body = '
-                        <p>Chúng tôi chỉ cần xác minh địa chỉ email của bạn trước khi bạn có thể truy cập vào Chat App</p>
-                        
-                        <p>Xác minh địa chỉ email của bạn: </p> <a href="' . $verify_link . '">
-                        Nhấn vào đây!
-                        </a>
-                        
-                        <p>Cảm ơn! – Nhóm 8</p>';
-                        $mail->send();
-
-                        $success_message = 'Kiểm tra email được gửi tới ' . $user->getUserEmail()
-                        . ' để xác thực đăng ký.';
-                    } else {
-                        $error = 'Đã có lỗi xảy ra, vui lòng thử lại';
-                    }
-                }
+                $error = 'Đã có lỗi xảy ra, vui lòng thử lại';
             }
         }
     }

@@ -1,20 +1,56 @@
 <?php
+$error = '';
 session_start();
+if (isset($_SESSION["user_data"])) {
+    header('location: chatroom.php');
+}
+
+if (isset($_POST['login'])) {
+    if (!filter_var($_POST['user_email'], FILTER_VALIDATE_EMAIL)) {
+        $error = 'Email không hợp lệ';
+    } else if (strlen($_POST['user_password']) < 8) {
+        $error = 'Mật khẩu không hợp lệ';
+    } else {
+        require_once("database/ChatUser.php");
+        $user = new ChatUser();
+        $user->setUserEmail($_POST['user_email']);
+        $data_user = $user->getUserDataByEmail();
+        if (!is_array($data_user) || count($data_user) == 0) {
+            $error = 'Email không tồn tại';
+        } else {
+            if (password_verify($_POST['user_password'], $data_user['user_password'])) {
+                if ($data_user['user_status'] == 'Disable') {
+                    $error = 'Tài khoản chưa xác thực';
+                } else {
+                    $user->setUserId($data_user['user_id']);
+                    $user->setUserLoginStatus('Login');
+                    if ($user->updateUserLoginStatus()) {
+                        $_SESSION['user_data'][$data_user['user_id']] = [
+                            "id" => $data_user['user_id'],
+                            "name" => $data_user['user_name'],
+                            "profile" => $data_user['user_profile']
+                        ];
+                        header('location: chatroom.php');
+                    } else {
+                        $error = 'Đã có lỗi xảy ra, vui lòng thử lại';
+                    }
+                }
+            } else {
+                $error = 'Mật khẩu không chính xác';
+            }
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <title>Social - Network, Community and Event Theme</title>
+    <title>Đăng nhập - Chat application</title>
 
     <!-- Meta Tags -->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <meta name="author" content="Webestica.com" />
-    <meta name="description" content="Bootstrap 5 based Social Media Network and Community Theme" />
-
-    <!-- Favicon -->
-    <link rel="shortcut icon" href="assets/images/favicon.ico" />
 
     <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -34,7 +70,6 @@ session_start();
         <!-- Container START -->
         <div class="container">
         <?php
-
         if (isset($_SESSION['success_message'])) {
             echo '
           <div class="alert alert-success text-center" role="alert">
@@ -51,9 +86,16 @@ session_start();
                     <!-- Title -->
                     <h1 class="mb-2">Đăng nhập</h1>
                     <p class="mb-0">
-                        Không có tài khoản?<a href="sign-up.html">
+                        Không có tài khoản?<a href="register.php">
                             Nhấn vào đây để đăng ký</a>
                     </p>
+                    <?php 
+                    if ($error != '') {
+                        echo '<div class="alert alert-danger text-center" role="alert">
+                    ' . $error . '
+                </div>';
+                    }
+                    ?>
                     <!-- Form START -->
                     <form method="post" class="mt-sm-4">
                         <!-- Email -->
