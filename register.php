@@ -47,7 +47,7 @@ if (isset($_POST['register'])) {
                 $mail->addAddress($user->getUserEmail());
                 $mail->isHTML(true);
 
-                $mail->Subject = '<p>Mã xác minh đăng ký tham gia Chat App - Nhóm 8</p>';
+                $mail->Subject = 'Xac minh dang ky - Chat App';
 
                 $verify_link = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . "{$_SERVER['HTTP_HOST']}/"
                     . "verify.php?code=" . $user->getUserVerificationCode();
@@ -105,7 +105,7 @@ if (isset($_POST['register'])) {
                             <!-- Title -->
                             <h1 class="mb-2">Đăng ký</h1>
                             <span class="d-block">Đã có tài khoản?
-                                <a href="#">Đăng nhập ở đây</a></span>
+                                <a href="index.php">Đăng nhập ở đây</a></span>
                         </div>
                         <?php
                         if ($error != '') {
