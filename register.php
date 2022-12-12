@@ -1,4 +1,11 @@
 <?php
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
+
+require 'vendor/autoload.php';
+
 $error = '';
 $success_message = '';
 if (isset($_POST['register'])) {
@@ -24,7 +31,7 @@ if (isset($_POST['register'])) {
             } else {
                 $user->setUserPassword(md5($_POST['user_password']));
                 $user->setUserProfile("images/placeholder.jpg");
-                $user->setUserStatus('disable');
+                $user->setUserStatus('Disable');
                 $user->setUserCreatedOn(date("Y-m-d H:i:s"));
                 $user->setUserVerificationCode(md5(uniqid()));
                 $user_data = $user->getUserDataByEmail();
@@ -32,7 +39,34 @@ if (isset($_POST['register'])) {
                     $error = 'Tài khoản đã tồn tại';
                 } else {
                     if ($user->saveData()) {
-                        $success_message = 'Đăng ký tài khoản thành công';
+                        $mail = new PHPMailer(true);
+                        $mail->isSMTP();
+                        $mail->Host = 'smtp.gmail.com';
+                        $mail->SMTPAuth = true;
+                        $mail->Username = '22110179@student.hcmute.edu.vn';
+                        $mail->Password = 'TEST@123';
+                        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                        $mail->Port = 587;
+                        $mail->setFrom("chatappnhom8@4onl.net", "Nhom 8");
+                        $mail->addAddress($user->getUserEmail());
+                        $mail->isHTML(true);
+
+                        $mail->Subject = '<p>Mã xác minh đăng ký tham gia Chat App - Nhóm 8</p>';
+
+                        $verify_link = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . "{$_SERVER['HTTP_HOST']}/"
+                            . "verify.php?code=" . $user->getUserVerificationCode();
+                        $mail->Body = '
+                        <p>Chúng tôi chỉ cần xác minh địa chỉ email của bạn trước khi bạn có thể truy cập vào Chat App</p>
+                        
+                        <p>Xác minh địa chỉ email của bạn: </p> <a href="' . $verify_link . '">
+                        Nhấn vào đây!
+                        </a>
+                        
+                        <p>Cảm ơn! – Nhóm 8</p>';
+                        $mail->send();
+
+                        $success_message = 'Kiểm tra email được gửi tới ' . $user->getUserEmail()
+                        . ' để xác thực đăng ký.';
                     } else {
                         $error = 'Đã có lỗi xảy ra, vui lòng thử lại';
                     }

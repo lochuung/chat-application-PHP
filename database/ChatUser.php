@@ -67,6 +67,30 @@ class ChatUser
         return false;
     }
 
+    function isExistVerificationCode() {
+        $sql = "SELECT * FROM chat_user_table WHERE user_verification_code = :user_verification_code";
+        $statement = $this->conn->prepare($sql);
+        $statement->bindParam(":user_verification_code", $this->user_verification_code);
+        $statement->execute();
+        if ($statement->rowCount() > 0) {
+            return true;
+        }
+        return false;
+    }   
+
+    function enableUserAccount() {
+        $sql = "UPDATE chat_user_table SET user_status = :user_status WHERE 
+        user_verification_code = :user_verification_code";
+        $statement = $this->conn->prepare($sql);
+        $statement->bindParam(":user_status", $this->user_status);
+        $statement->bindParam(":user_verification_code", $this->user_verification_code);
+        
+        if ($statement->execute()) {
+            return true;
+        }
+        return false;
+    }
+
     public function getUserId()
     {
         return $this->user_id;
