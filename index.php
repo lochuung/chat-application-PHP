@@ -100,7 +100,10 @@ if (isset($_POST['login'])) {
                     <form method="post" class="mt-sm-4">
                         <!-- Email -->
                         <div class="mb-3 input-group-lg">
-                            <input type="email" name="user_email" class="form-control" placeholder="Nhập email" />
+                            <input type="email" name="user_email" value="<?php
+                            if (isset($_POST['user_email']))
+                                echo $_POST['user_email'];
+                            ?>" class="form-control" placeholder="Nhập email" />
                         </div>
                         <!-- New password -->
                         <div class="mb-3 position-relative">

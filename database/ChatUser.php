@@ -20,7 +20,8 @@ class ChatUser
         $this->conn = $db->connect();
     }
 
-    function getUserDataByEmail() {
+    function getUserDataByEmail()
+    {
         $sql = "SELECT * FROM chat_user_table WHERE user_email = :user_email";
         $statement = $this->conn->prepare($sql);
         $statement->bindParam(':user_email', $this->user_email);
@@ -30,7 +31,18 @@ class ChatUser
         return $user_data;
     }
 
-    function saveData() {
+    function getUserDataById() {
+        $sql = "SELECT * FROM chat_user_table WHERE user_id = :user_id";
+        $statement = $this->conn->prepare($sql);
+        $statement->bindParam(':user_id', $this->user_id);
+        if ($statement->execute()) {
+            $user_data = $statement->fetch(PDO::FETCH_ASSOC);
+        }
+        return $user_data;
+    }
+
+    function saveData()
+    {
         $sql = "INSERT INTO chat_user_table (
             user_id,
             user_name,
@@ -67,7 +79,8 @@ class ChatUser
         return false;
     }
 
-    function isExistVerificationCode() {
+    function isExistVerificationCode()
+    {
         $sql = "SELECT * FROM chat_user_table WHERE user_verification_code = :user_verification_code";
         $statement = $this->conn->prepare($sql);
         $statement->bindParam(":user_verification_code", $this->user_verification_code);
@@ -76,22 +89,24 @@ class ChatUser
             return true;
         }
         return false;
-    }   
+    }
 
-    function enableUserAccount() {
+    function enableUserAccount()
+    {
         $sql = "UPDATE chat_user_table SET user_status = :user_status WHERE 
         user_verification_code = :user_verification_code";
         $statement = $this->conn->prepare($sql);
         $statement->bindParam(":user_status", $this->user_status);
         $statement->bindParam(":user_verification_code", $this->user_verification_code);
-        
+
         if ($statement->execute()) {
             return true;
         }
         return false;
     }
 
-    function updateUserLoginStatus() {
+    function updateUserLoginStatus()
+    {
         $sql = "UPDATE chat_user_table SET user_login_status = :user_login_status WHERE user_id = :user_id";
         $statement = $this->conn->prepare($sql);
         $statement->bindParam(':user_login_status', $this->user_login_status);
@@ -100,6 +115,50 @@ class ChatUser
             return true;
         }
         return false;
+    }
+
+    function updateData() {
+        $sql = "UPDATE chat_user_table SET                
+    user_name = :user_name,
+    user_email = :user_email,
+    user_password = :user_password,
+    user_profile = :user_profile WHERE user_id = :user_id";
+        $statement = $this->conn->prepare($sql);
+        $statement->bindParam(':user_name', $this->user_name);
+        $statement->bindParam(':user_email', $this->user_email);
+        $statement->bindParam(':user_password', $this->user_password);
+        $statement->bindParam(':user_profile', $this->user_profile);
+        $statement->bindParam(':user_id', $this->user_id);
+        if ($statement->execute())
+            return true;
+        return false;
+    }
+
+    function uploadImageFile($user_profile)
+    {
+        $target_dir = "images/";
+
+        $extension = explode('.', $user_profile['name']);
+        $new_name = rand() . $extension[0] . rand() . '.' . $extension[count($extension) - 1];
+        $target_file = $target_dir . basename($new_name);
+        $uploadOk = 1;
+        $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+
+        if (file_exists($target_file)) {
+            $uploadOk = 0;
+        }
+
+        if ($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg") {
+            $uploadOk = 0;
+        }
+
+        echo $uploadOk;
+
+        if ($uploadOk == 1 && move_uploaded_file($user_profile["tmp_name"], $target_file)) {
+            return $target_file;
+        } else {
+            return '';
+        }
     }
 
     public function getUserId()
