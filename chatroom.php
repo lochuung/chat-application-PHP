@@ -8,15 +8,13 @@ if (!isset($_SESSION['user_data'])) {
 <html lang="en">
 
 <head>
-    <title>Social - Network, Community and Event Theme</title>
+    <title>Phòng chat - Chat application</title>
 
     <!-- Meta Tags -->
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
 
-    <!-- Favicon -->
-    <link rel="shortcut icon" href="assets/images/favicon.ico"/>
-
+    <script src="assets/vendor/jquery-3.6.1.min.js"></script>
     <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"/>
@@ -31,7 +29,7 @@ if (!isset($_SESSION['user_data'])) {
 </head>
 
 <body>
-<?php include_once ("part/navbar.php")?>
+<?php include_once("part/navbar.php") ?>
 
 <!-- **************** MAIN CONTENT START **************** -->
 <main>
@@ -97,7 +95,7 @@ if (!isset($_SESSION['user_data'])) {
                                             foreach ($_SESSION['user_data'] as $key => $value) {
                                                 echo '
                           <li data-bs-dismiss="offcanvas">
-                            <a href="#chat-2" class="nav-link text-start" id="chat-2-tab" data-bs-toggle="pill" role="tab">
+                            <a href="#chat-1" class="nav-link text-start" id="chat-1-tab" data-bs-toggle="pill" role="tab">
                               <div class="d-flex">
                                 <div class="flex-shrink-0 avatar me-2 status-online">
                                   <img class="avatar-img rounded-circle" src="' . $value['profile'] . '" alt="" />
@@ -119,75 +117,63 @@ if (!isset($_SESSION['user_data'])) {
                     </div>
                 </nav>
             </div>
-            <!-- Sidebar START -->
-
             <!-- Chat conversation START -->
             <div class="col-lg-8 col-xxl-9">
-                <div class="d-flex aligns-items-center justify-content-center card card-chat rounded-start-lg-0 border-start-lg-0">
-                    <div class="d-flex aligns-items-center justify-content-center">
-                        <strong>Hãy chọn một đoạn chat hoặc bắt đầu cuộc trò chuyện mới</strong>
+                <div class="card card-chat rounded-start-lg-0 border-start-lg-0">
+                    <div class="card-body h-100">
+                        <div class="tab-content py-0 mb-0 h-100">
+                            <div class="fade tab-pane show active h-100" id="chat-1" role="tabpanel"
+                                 aria-labelledby="chat-1-tab">
+                                <div class="d-sm-flex justify-content-between align-items-center">
+                                    <div class="d-flex mb-2 mb-sm-0">
+                                        <div class="d-block flex-grow-1">
+                                            <h6 class="mb-0 mt-1">Phòng chat</h6>
+                                            <div class="small text-secondary">
+                                                <i class="fa-solid fa-circle text-success me-1"></i>Online
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr>
+
+                                <!-- Chat conversation START -->
+                                <div class="chat-conversation-content custom-scrollbar" id="message-chat">
+                                </div>
+                                <!-- Chat conversation END -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <form type="post" id="chat_form" class="d-sm-flex align-items-end">
+                            <textarea id="chat_message" maxlength="1000" minlength="1" class="form-control mb-sm-0 mb-3"
+                                      data-autoresize="" placeholder="Nhập tin nhắn"
+                                      rows="1"></textarea>
+                            <button class="btn btn-sm btn-danger-soft ms-sm-2">
+                                <i class="fa-solid fa-face-smile fs-6"></i>
+                            </button>
+                            <button class="btn btn-sm btn-secondary-soft ms-2">
+                                <i class="fa-solid fa-paperclip fs-6"></i>
+                            </button>
+                            <button type="submit" class="btn btn-sm btn-primary ms-2">
+                                <i class="fa-solid fa-paper-plane fs-6"></i>
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
-            <!-- Chat conversation END -->
         </div>
-        <!-- Row END -->
-        <!-- =======================
-      Chat END -->
     </div>
-    <!-- Container END -->
 </main>
-<!-- **************** MAIN CONTENT END **************** -->
+<!-- Row END -->
+<!-- =======================
+Chat END -->
 
-<!-- Chat START -->
-<div class="position-fixed bottom-0 end-0 p-3">
-    <!-- Chat toast START -->
-    <div id="chatToast" class="toast bg-mode" role="alert" aria-live="assertive" aria-atomic="true"
-         data-bs-autohide="false">
-        <div class="toast-header bg-mode d-flex justify-content-between">
-            <!-- Title -->
-            <h6 class="mb-0">New message</h6>
-            <button class="btn btn-secondary-soft-hover py-1 px-2" data-bs-dismiss="toast" aria-label="Close">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-        <!-- Top avatar and status END -->
-        <div class="toast-body collapse show" id="collapseChat">
-            <!-- Chat conversation START -->
-            <!-- Form -->
-            <form>
-                <div class="input-group mb-3">
-                    <span class="input-group-text border-0">To</span>
-                    <input class="form-control" type="text" placeholder="Type a name or multiple names"/>
-                </div>
-            </form>
-            <!-- Chat conversation END -->
-            <!-- Extra space -->
-            <div class="h-200px"></div>
-            <!-- Button  -->
-            <div class="d-sm-flex align-items-end">
-                <textarea class="form-control mb-sm-0 mb-3" placeholder="Type a message" rows="1"
-                          spellcheck="false"></textarea>
-                <button class="btn btn-sm btn-danger-soft ms-sm-2">
-                    <i class="fa-solid fa-face-smile fs-6"></i>
-                </button>
-                <button class="btn btn-sm btn-secondary-soft ms-2">
-                    <i class="fa-solid fa-paperclip fs-6"></i>
-                </button>
-                <button class="btn btn-sm btn-primary ms-2">
-                    <i class="fa-solid fa-paper-plane fs-6"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-    <!-- Chat toast END -->
-</div>
-<!-- Chat END -->
+<!-- Container END -->
+<!-- **************** MAIN CONTENT END **************** -->
 
 <!-- =======================
 JS libraries, plugins and custom scripts -->
 
-<script src="assets/vendor/jquery-3.6.1.min.js"></script>
 <!-- Bootstrap JS -->
 <script src="assets/vendor/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -196,27 +182,83 @@ JS libraries, plugins and custom scripts -->
 
 <!-- Template Functions -->
 <script src="assets/js/functions.js"></script>
+<script src="assets/js/logout.js"></script>
 <script>
     $(document).ready(function () {
-        const id = $("#logout-id").val();
-        $("#logout").click(function () {
-            $.ajax({
-                url: "action.php",
-                method: "POST",
-                data: {
-                    "id": id,
-                    "action": 'leave'
+        const conn = new WebSocket('ws://localhost:8080');
+        conn.onopen = function (e) {
+            console.log("Connection established!");
+        };
 
-                },
-                success: function (data) {
-                    const json = JSON.parse(data);
-                    if (json.status == 1) {
-                        location.href = "index.php";
-                    }
-                }
-            });
-        });
-    });
+        conn.onmessage = function (e) {
+            console.log(e.data);
+            var data = JSON.parse(e.data);
+            var currentTime = new Date();
+            var html = `            <!-- Chat name -->
+                                    <div class="text-start small my-2">
+                                        ${data.userName}
+                                    </div>
+                                    <!-- Chat message left -->
+                                    <div class="d-flex mb-1">
+                                        <div class="flex-shrink-0 avatar avatar-xs me-2">
+                                            <img
+                                                    class="avatar-img rounded-circle"
+                                                    src="${data.userProfile}"
+                                                    alt=""
+                                            />
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="w-100">
+                                                <div class="d-flex flex-column align-items-start">
+                                                    <div
+                                                            class="bg-light text-secondary p-2 px-3 rounded-2"
+                                                    >
+                                                        ${data.msg}
+                                                    </div>
+                                                    <div class="small my-2">${currentTime.getHours()}:${currentTime.getMinutes()}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>`;
+            $('#message-chat .os-content').append(html);
+        }
+
+        $('#chat_form').on('submit', function (e) {
+            e.preventDefault();
+            var msg = $("#chat_message").val();
+            if (msg.length > 0) {
+                var data = {
+                    userId: $('#login_user_id').val(),
+                    userName: $('#login_user_name').val(),
+                    userProfile: $('#login_user_profile').val(),
+                    msg: msg
+                };
+                conn.send(JSON.stringify(data));
+                $('#chat_message').val('');
+                var currentTime = new Date();
+                var html = `        <!-- Chat message right -->
+                                    <div class="d-flex justify-content-end text-end mb-1">
+                                        <div class="w-100">
+                                            <div class="d-flex flex-column align-items-end">
+                                                <div
+                                                        class="bg-primary text-white p-2 px-3 rounded-2"
+                                                >
+                                                    ${data.msg}
+                                                </div>
+                                                <div class="d-flex my-2">
+                                                    <div class="small text-secondary">${currentTime.getHours()}:${currentTime.getMinutes()}</div>
+                                                    <div class="small ms-2">
+                                                        <i class="fa-solid fa-check"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>`;
+                $('#message-chat .os-content').append(html);
+            }
+        })
+
+    })
 </script>
 </body>
 

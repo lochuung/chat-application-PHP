@@ -59,9 +59,11 @@ Header START -->
                                 <div class="avatar me-3">
                                     <img class="avatar-img rounded-circle" src="<?php echo $session_data['profile'] ?>"
                                          alt="avatar"/>
+                                    <input type="hidden" id="login_user_profile" value="<?php echo $session_data['profile'] ?>">
                                 </div>
                                 <div>
                                     <a class="h6 stretched-link" href="#"><?php echo $session_data['name'] ?></a>
+                                    <input type="hidden" id="login_user_name" value="<?php echo $session_data['name'] ?>">
                                 </div>
                             </div>
                             <a class="dropdown-item btn btn-primary-soft btn-sm my-2 text-center" href="profile.php">Sửa
@@ -70,8 +72,8 @@ Header START -->
                         <li class="dropdown-divider"></li>
                         <li>
                             <a id="logout" style="cursor: pointer" class="dropdown-item bg-danger-soft-hover"><i
-                                    class="bi bi-power fa-fw me-2"></i>Đăng xuất</a>
-                            <input type="hidden" id="logout-id" value="<?php echo $session_data['id']; ?>">
+                                        class="bi bi-power fa-fw me-2"></i>Đăng xuất</a>
+                            <input type="hidden" id="login_user_id" value="<?php echo $session_data['id']; ?>">
                         </li>
                         <li>
                             <hr class="dropdown-divider"/>
