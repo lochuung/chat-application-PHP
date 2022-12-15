@@ -3,6 +3,13 @@ session_start();
 if (!isset($_SESSION['user_data'])) {
     header('location: index.php');
 }
+require_once "database/ChatRoom.php";
+$chat = new ChatRoom();
+$chat_data = $chat->getAllChatData();
+$user_id = '';
+foreach ($_SESSION['user_data'] as $key => $value) {
+    $user_id = $value['id'];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -138,6 +145,61 @@ if (!isset($_SESSION['user_data'])) {
 
                                 <!-- Chat conversation START -->
                                 <div class="chat-conversation-content custom-scrollbar" id="message-chat">
+                                    <?php
+                                    foreach ($chat_data as $key => $message) {
+                                        $date = date_create($message['created_on']);
+                                        $date = date_format($date, "H:i:s, d/m/Y");
+                                        $msg = $message['message'];
+                                        $user_id = $message['user_id'];
+                                        if (isset($_SESSION['user_data'][$user_id])) {
+                                            echo '        <!-- Chat message right -->
+                                    <div class="d-flex justify-content-end text-end mb-1">
+                                        <div class="w-100">
+                                            <div class="d-flex flex-column align-items-end">
+                                                <div
+                                                        class="bg-primary text-white p-2 px-3 rounded-2"
+                                                >
+                                                    ' . $msg . '
+                                                </div>
+                                                <div class="d-flex my-2">
+                                                    <div class="small text-secondary">' . $date . '</div>
+                                                    <div class="small ms-2">
+                                                        <i class="fa-solid fa-check"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>';
+                                        } else {
+                                            echo '            <!-- Chat name -->
+                                    <div class="text-start small my-2">
+                                        ' . $message['user_name'] . '
+                                    </div>
+                                    <!-- Chat message left -->
+                                    <div class="d-flex mb-1">
+                                        <div class="flex-shrink-0 avatar avatar-xs me-2">
+                                            <img
+                                                    class="avatar-img rounded-circle"
+                                                    src="' . $message['user_profile'] . '"
+                                                    alt=""
+                                            />
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="w-100">
+                                                <div class="d-flex flex-column align-items-start">
+                                                    <div
+                                                            class="bg-light text-secondary p-2 px-3 rounded-2"
+                                                    >
+                                                        ' . $msg . '
+                                                    </div>
+                                                    <div class="small my-2">' . $date . '</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>';
+                                        }
+                                    }
+                                    ?>
                                 </div>
                                 <!-- Chat conversation END -->
                             </div>
@@ -186,6 +248,9 @@ JS libraries, plugins and custom scripts -->
 <script>
     $(document).ready(function () {
         const conn = new WebSocket('ws://localhost:8080');
+        const chat_display = $("#message-chat .os-viewport-native-scrollbars-invisible");
+        //scroll to down of the message chat
+        chat_display.scrollTop(chat_display[0].scrollHeight);
         conn.onopen = function (e) {
             console.log("Connection established!");
         };
@@ -243,6 +308,8 @@ JS libraries, plugins and custom scripts -->
             }
 
             $('#message-chat .os-content').append(html);
+            //scroll to down of the message chat
+            chat_display.scrollTop(chat_display[0].scrollHeight);
         }
 
         $('#chat_form').on('submit', function (e) {

@@ -1,41 +1,59 @@
 <?php
+
 namespace MyApp;
-require dirname(__DIR__) . '/database/ChatUser.php';
-use Cassandra\Date;
-use ChatUser;
+
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
-class Chat implements MessageComponentInterface {
+
+require dirname(__DIR__) . '/database/ChatUser.php';
+require dirname(__DIR__) . '/database/ChatRoom.php';
+
+class Chat implements MessageComponentInterface
+{
     protected $clients;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->clients = new \SplObjectStorage;
     }
 
-    public function onOpen(ConnectionInterface $conn) {
+    public function onOpen(ConnectionInterface $conn)
+    {
         // Store the new connection to send messages to later
         $this->clients->attach($conn);
 
         echo "New connection! ({$conn->resourceId})\n";
     }
 
-    public function onMessage(ConnectionInterface $from, $msg) {
+    public function onMessage(ConnectionInterface $from, $msg)
+    {
         $numRecv = count($this->clients) - 1;
         echo sprintf('Connection %d sending message "%s" to %d other connection%s' . "\n"
             , $from->resourceId, $msg, $numRecv, $numRecv == 1 ? '' : 's');
 
         $data = json_decode($msg, true);
-        $user = new ChatUser();
+        $user = new \ChatUser();
         $user->setUserId($data['userId']);
         $user_data = $user->getUserDataById();
 
         $data['userProfile'] = $user_data['user_profile'];
-        //set time zone
+        //set time
+        $data['time'] = time();
+
+        //save message data to chatroom table
+        $chat = new \ChatRoom();
+        $chat->setUserId($data['userId']);
+        $chat->setMessage($data['msg']);
+        //set Vietnam time zone
         date_default_timezone_set('Asia/Ho_Chi_Minh');
-        $data['time'] = date("H:i:s, d/m/Y");
+        $chat->setCreatedOn(date('Y-m-d H:i:s', $data['time']));
+        $chat->saveMessageData();
+
+        //change timestamp to time string
+        $data['time'] = date('H:i:s, d/m/Y', $data['time']);
+
         foreach ($this->clients as $client) {
             if ($from == $client) {
-                // The sender is not the receiver, send to each client connected
                 $data['from'] = 'me';
             } else {
                 $data['from'] = $user_data['user_name'];
@@ -44,14 +62,16 @@ class Chat implements MessageComponentInterface {
         }
     }
 
-    public function onClose(ConnectionInterface $conn) {
+    public function onClose(ConnectionInterface $conn)
+    {
         // The connection is closed, remove it, as we can no longer send it messages
         $this->clients->detach($conn);
 
         echo "Connection {$conn->resourceId} has disconnected\n";
     }
 
-    public function onError(ConnectionInterface $conn, \Exception $e) {
+    public function onError(ConnectionInterface $conn, \Exception $e)
+    {
         echo "An error has occurred: {$e->getMessage()}\n";
 
         $conn->close();
