@@ -78,10 +78,6 @@ if (isset($_POST['edit-password'])) {
             name="description"
             content="Bootstrap based News, Magazine and Blog Theme"
     />
-
-    <!-- Favicon -->
-    <link rel="shortcut icon" href="assets/images/favicon.ico"/>
-
     <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link
@@ -100,21 +96,6 @@ if (isset($_POST['edit-password'])) {
             type="text/css"
             href="assets/vendor/bootstrap-icons/bootstrap-icons.css"
     />
-    <link
-            rel="stylesheet"
-            type="text/css"
-            href="assets/vendor/choices.js/public/assets/styles/choices.min.css"
-    />
-    <link
-            rel="stylesheet"
-            type="text/css"
-            href="assets/vendor/dropzone/dist/dropzone.css"
-    />
-    <link
-            rel="stylesheet"
-            type="text/css"
-            href="assets/vendor/flatpickr/dist/flatpickr.css"
-    />
 
     <!-- Theme CSS -->
     <link
@@ -123,6 +104,7 @@ if (isset($_POST['edit-password'])) {
             type="text/css"
             href="assets/css/style.css"
     />
+    <script src="assets/vendor/jquery-3.6.1.min.js"></script>
 </head>
 
 <body>
@@ -231,7 +213,7 @@ include_once "part/navbar.php";
                                                 name="current-password"
                                                 class="form-control"
                                                 value="<?php
-                                                echo isset($_POST["current-password"]) ? $_POST["current-password"] : ''
+                                                echo $_POST["current-password"] ?? ''
                                                 ?>"
                                                 placeholder="Nhập mật khẩu hiện tại"
                                                 required
@@ -290,12 +272,10 @@ JS libraries, plugins and custom scripts -->
 <script src="assets/vendor/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
 <!-- Vendors -->
-<script src="assets/vendor/choices.js/public/assets/scripts/choices.min.js"></script>
-<script src="assets/vendor/dropzone/dist/dropzone.js"></script>
-<script src="assets/vendor/flatpickr/dist/flatpickr.min.js"></script>
 <script src="assets/vendor/pswmeter/pswmeter.min.js"></script>
 
 <!-- Template Functions -->
 <script src="assets/js/functions.js"></script>
+<script src="assets/js/logout.js"></script>
 </body>
 </html>

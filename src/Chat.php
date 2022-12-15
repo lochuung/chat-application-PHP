@@ -1,8 +1,10 @@
 <?php
 namespace MyApp;
+require dirname(__DIR__) . '/database/ChatUser.php';
+use Cassandra\Date;
+use ChatUser;
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
-
 class Chat implements MessageComponentInterface {
     protected $clients;
 
@@ -22,11 +24,23 @@ class Chat implements MessageComponentInterface {
         echo sprintf('Connection %d sending message "%s" to %d other connection%s' . "\n"
             , $from->resourceId, $msg, $numRecv, $numRecv == 1 ? '' : 's');
 
+        $data = json_decode($msg, true);
+        $user = new ChatUser();
+        $user->setUserId($data['userId']);
+        $user_data = $user->getUserDataById();
+
+        $data['userProfile'] = $user_data['user_profile'];
+        //set time zone
+        date_default_timezone_set('Asia/Ho_Chi_Minh');
+        $data['time'] = date("H:i:s, d/m/Y");
         foreach ($this->clients as $client) {
-            if ($from !== $client) {
+            if ($from == $client) {
                 // The sender is not the receiver, send to each client connected
-                $client->send($msg);
+                $data['from'] = 'me';
+            } else {
+                $data['from'] = $user_data['user_name'];
             }
+            $client->send(json_encode($data));
         }
     }
 

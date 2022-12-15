@@ -192,11 +192,10 @@ JS libraries, plugins and custom scripts -->
 
         conn.onmessage = function (e) {
             console.log(e.data);
-            var data = JSON.parse(e.data);
-            var currentTime = new Date();
-            var html = `            <!-- Chat name -->
+            const data = JSON.parse(e.data);
+            let html = `            <!-- Chat name -->
                                     <div class="text-start small my-2">
-                                        ${data.userName}
+                                        ${data.from}
                                     </div>
                                     <!-- Chat message left -->
                                     <div class="d-flex mb-1">
@@ -215,28 +214,14 @@ JS libraries, plugins and custom scripts -->
                                                     >
                                                         ${data.msg}
                                                     </div>
-                                                    <div class="small my-2">${currentTime.getHours()}:${currentTime.getMinutes()}</div>
+                                                    <div class="small my-2">${data.time}</div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>`;
-            $('#message-chat .os-content').append(html);
-        }
 
-        $('#chat_form').on('submit', function (e) {
-            e.preventDefault();
-            var msg = $("#chat_message").val();
-            if (msg.length > 0) {
-                var data = {
-                    userId: $('#login_user_id').val(),
-                    userName: $('#login_user_name').val(),
-                    userProfile: $('#login_user_profile').val(),
-                    msg: msg
-                };
-                conn.send(JSON.stringify(data));
-                $('#chat_message').val('');
-                var currentTime = new Date();
-                var html = `        <!-- Chat message right -->
+            if (data.from === 'me') {
+                html = `        <!-- Chat message right -->
                                     <div class="d-flex justify-content-end text-end mb-1">
                                         <div class="w-100">
                                             <div class="d-flex flex-column align-items-end">
@@ -246,7 +231,7 @@ JS libraries, plugins and custom scripts -->
                                                     ${data.msg}
                                                 </div>
                                                 <div class="d-flex my-2">
-                                                    <div class="small text-secondary">${currentTime.getHours()}:${currentTime.getMinutes()}</div>
+                                                    <div class="small text-secondary">${data.time}</div>
                                                     <div class="small ms-2">
                                                         <i class="fa-solid fa-check"></i>
                                                     </div>
@@ -254,7 +239,21 @@ JS libraries, plugins and custom scripts -->
                                             </div>
                                         </div>
                                     </div>`;
-                $('#message-chat .os-content').append(html);
+                $('#chat_message').val('');
+            }
+
+            $('#message-chat .os-content').append(html);
+        }
+
+        $('#chat_form').on('submit', function (e) {
+            e.preventDefault();
+            var msg = $("#chat_message").val();
+            if (msg.length > 0) {
+                var data = {
+                    userId: $('#login_user_id').val(),
+                    msg: msg
+                };
+                conn.send(JSON.stringify(data));
             }
         })
 
