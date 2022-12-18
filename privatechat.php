@@ -37,6 +37,7 @@ $users_data = $user->getAllUserDataWithStatusCount();
 
     <!-- Theme CSS -->
     <link id="style-switch" rel="stylesheet" type="text/css" href="assets/css/style.css"/>
+    <script src="assets/vendor/jquery-3.6.1.min.js"></script>
 </head>
 
 <body>
@@ -112,19 +113,19 @@ $users_data = $user->getAllUserDataWithStatusCount();
                                                     if ($user['count_status'] > 0)
                                                         $total_unread = $users_data['count_status'];
                                                     echo '
-                          <li data-bs-dismiss="offcanvas">
-                            <a href="#" class="nav-link text-start" data-bs-toggle="pill" role="tab">
-                              <div class="d-flex">
-                                <div class="flex-shrink-0 avatar me-2 ' . $status . '">
-                                  <img class="avatar-img rounded-circle" src="' . $user['user_profile'] . '" alt="" />
-                                </div>
-                                <div class="flex-grow-1 my-auto d-block">
-                                  <h6 class="mb-0 mt-1">' . $user['user_name'] . '</h6>
-                                  <span class="badge bg-danger badge-pill">' . $total_unread . '</span>
-                                </div>
-                              </div>
-                            </a>
-                          </li>';
+                                          <li data-bs-dismiss="offcanvas">
+                                            <a class="nav-link text-start select-user" data-userid="' . $user['user_id'] . '" data-bs-toggle="pill" role="tab">
+                                              <div class="d-flex">
+                                                <div id="receiver_status' . $user['user_id'] . '" class="flex-shrink-0 avatar me-2 ' . $status . '" data-status="' . $status . '">
+                                                  <img class="avatar-img rounded-circle" id="receiver_profile' . $user['user_id'] . '" src="' . $user['user_profile'] . '" alt="" />
+                                                </div>
+                                                <div class="flex-grow-1 my-auto d-block">
+                                                  <h6 class="mb-0 mt-1" id="receiver' . $user['user_id'] . '">' . $user['user_name'] . '</h6>
+                                                  <span class="badge bg-danger badge-pill">' . $total_unread . '</span>
+                                                </div>
+                                              </div>
+                                            </a>
+                                          </li>';
                                                 }
                                             }
                                             ?>
@@ -145,7 +146,7 @@ $users_data = $user->getAllUserDataWithStatusCount();
                             <div class="fade tab-pane show active h-100" id="chat-1" role="tabpanel"
                                  aria-labelledby="chat-1-tab">
                                 <div class="d-sm-flex justify-content-between align-items-center">
-                                    <div class="d-flex mb-2 mb-sm-0">
+                                    <div class="d-flex mb-2 mb-sm-0" id="chat-header">
                                         <div class="d-block flex-grow-1">
                                             <h6 class="">Chat riêng tư</h6>
                                         </div>
@@ -155,12 +156,15 @@ $users_data = $user->getAllUserDataWithStatusCount();
                                 <hr>
 
                                 <!-- Chat conversation START -->
-                                <div class="chat-conversation-content custom-scrollbar" id="message-chat">
+                                <div class="chat-conversation-content custom-scrollbar" id="chat-body">
                                 </div>
                                 <!-- Chat conversation END -->
+
                             </div>
                         </div>
                     </div>
+
+                    <div class="card-footer" id="chat-footer"></div>
                 </div>
             </div>
         </div>
@@ -200,7 +204,58 @@ JS libraries, plugins and custom scripts -->
         conn.onclose = function (e) {
             console.log("Connection is closed!");
         }
+        $(document).on('click', '.select-user', function (e) {
+            const user_id = $(this).data('userid');
+            const receiver = {
+                id: user_id,
+                name: $(`#receiver${user_id}`).text(),
+                status: $(`#receiver_status${user_id}`).data('status'),
+                profile: $(`#receiver_profile${user_id}`)[0].src,
+            }
+            console.log(receiver.test)
+            makeChatArea(receiver.name, receiver.status, receiver.profile);
+
+        });
+
     })
+
+    function makeChatArea(name, status, profile) {
+        status = (status === 'status-online') ? "Online" : "Offline";
+        const status_color = status === 'Online' ? "text-success" : "text-danger";
+        const header =
+            `<div class="flex-shrink-0 avatar me-2">
+              <img class="avatar-img rounded-circle" src="${profile}" alt="">
+            </div>
+            <div class="d-block flex-grow-1">
+              <h6 class="mb-0 mt-1">${name}</h6>
+              <div class="small text-secondary">
+                <i class="fa-solid fa-circle ${status_color} me-1"></i>
+                ${status}
+              </div>
+            </div>`;
+
+        $('#chat-header').html(header);
+
+        //create chat text area
+        const footer =
+            `
+                <form type="post" id="chat_form" class="d-sm-flex align-items-end">
+                    <textarea id="chat_message" maxlength="1000" minlength="1" class="form-control mb-sm-0 mb-3"
+                                                                data-autoresize="" placeholder="Nhập tin nhắn"
+                                                                rows="1"></textarea>
+                    <button class="btn btn-sm btn-danger-soft ms-sm-2">
+                        <i class="fa-solid fa-face-smile fs-6"></i>
+                    </button>
+                    <button class="btn btn-sm btn-secondary-soft ms-2">
+                        <i class="fa-solid fa-paperclip fs-6"></i>
+                    </button>
+                    <button type="submit" class="btn btn-sm btn-primary ms-2">
+                        <i class="fa-solid fa-paper-plane fs-6"></i>
+                    </button>
+                </form>`;
+        $('#chat-footer').html(footer);
+
+    }
 </script>
 </body>
 
