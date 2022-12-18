@@ -32,8 +32,8 @@ class ChatUser
         $mail->isSMTP();
         $mail->Host = 'smtp.gmail.com';
         $mail->SMTPAuth = true;
-        $mail->Username = '22110179@student.hcmute.edu.vn';
-        $mail->Password = 'TEST@123';
+        $mail->Username = '';
+        $mail->Password = '';
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = 587;
         $mail->setFrom("22110179@student.hcmute.edu.vn", "Nhom 8");
