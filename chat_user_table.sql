@@ -14,3 +14,6 @@ CREATE TABLE `chat_user_table`
     COLLATE = 'utf8mb4_general_ci'
     ENGINE = InnoDB
 ;
+ALTER TABLE `chat_user_table`
+    ADD COLUMN `user_token`         VARCHAR(250) NOT NULL AFTER `user_login_status`,
+    ADD COLUMN `user_connection_id` INT          NOT NULL AFTER `user_token`;

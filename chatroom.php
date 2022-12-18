@@ -139,6 +139,7 @@ $users_data = $user->getAllUserData();
                                             <h6 class="">Phòng chat</h6>
                                         </div>
                                     </div>
+                                    <a href="privatechat.php" class="btn btn-success flex-grow-reverse-1">Chat riêng</a>
                                 </div>
                                 <hr>
 

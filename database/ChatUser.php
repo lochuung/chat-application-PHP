@@ -13,6 +13,8 @@ class ChatUser
     private $user_created_on;
     private $user_verification_code;
     private $user_login_status;
+    private $user_token;
+    private $user_connection_id;
     public $conn;
 
     public function __construct()
@@ -32,11 +34,11 @@ class ChatUser
         $mail->isSMTP();
         $mail->Host = 'smtp.gmail.com';
         $mail->SMTPAuth = true;
-        $mail->Username = '22110179@student.hcmute.edu.vn';
-        $mail->Password = 'TEST@123';
+        $mail->Username = 'huuloc2155@gmail.com';
+        $mail->Password = 'zbeqnnilquwrwrls';
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = 587;
-        $mail->setFrom("22110179@student.hcmute.edu.vn", "Nhom 8");
+        $mail->setFrom("huuloc2155@gmail.com", "Nhom 8");
         $mail->addAddress($to);
         $mail->isHTML();
 
@@ -67,7 +69,8 @@ class ChatUser
         return $user_data;
     }
 
-    function getUserDataByVerificationCode() {
+    function getUserDataByVerificationCode()
+    {
         $sql = "SELECT * FROM chat_user_table WHERE user_verification_code = :user_verification_code";
         $statement = $this->conn->prepare($sql);
         $statement->bindParam(':user_verification_code', $this->user_verification_code);
@@ -81,6 +84,17 @@ class ChatUser
     {
         $sql = "SELECT * FROM chat_user_table";
         $statement = $this->conn->prepare($sql);
+        $statement->execute();
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    function getAllUserDataWithStatusCount()
+    {
+        $sql = "SELECT user_id, user_name, user_profile, user_login_status, (SELECT COUNT(*) FROM chat_message 
+        WHERE to_user_id = :user_id AND from_user_id = chat_user_table.user_id AND status = 'N') AS count_status FROM
+        chat_user_table";
+        $statement = $this->conn->prepare($sql);
+        $statement->bindParam(':user_id', $this->user_id);
         $statement->execute();
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -151,9 +165,11 @@ class ChatUser
 
     function updateUserLoginStatus(): bool
     {
-        $sql = "UPDATE chat_user_table SET user_login_status = :user_login_status WHERE user_id = :user_id";
+        $sql = "UPDATE chat_user_table SET user_login_status = :user_login_status, 
+                           user_token = :user_token WHERE user_id = :user_id";
         $statement = $this->conn->prepare($sql);
         $statement->bindParam(':user_login_status', $this->user_login_status);
+        $statement->bindParam(':user_token', $this->user_token);
         $statement->bindParam(':user_id', $this->user_id);
         if ($statement->execute()) {
             return true;
@@ -177,6 +193,16 @@ class ChatUser
         if ($statement->execute())
             return true;
         return false;
+    }
+
+    function updateUserConnectionId()
+    {
+        $sql = "UPDATE chat_user_table SET
+   user_connection_id = :user_connection_id WHERE user_token = :user_token";
+        $statement = $this->conn->prepare($sql);
+        $statement->bindParam(':user_connection_id', $this->user_connection_id);
+        $statement->bindParam(':user_token', $this->user_token);
+        $statement->execute();
     }
 
     function uploadImageFile($user_profile): string
@@ -306,5 +332,25 @@ class ChatUser
     public function setUserLoginStatus($user_login_status)
     {
         $this->user_login_status = $user_login_status;
+    }
+
+    public function getUserToken()
+    {
+        return $this->user_token;
+    }
+
+    public function setUserToken($user_token)
+    {
+        $this->user_token = $user_token;
+    }
+
+    public function getUserConnectionId()
+    {
+        return $this->user_connection_id;
+    }
+
+    public function setUserConnectionId($user_connection_id)
+    {
+        $this->user_connection_id = $user_connection_id;
     }
 }

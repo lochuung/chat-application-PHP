@@ -22,13 +22,16 @@ if (isset($_POST['login'])) {
                 if ($data_user['user_status'] == 'Disable') {
                     $error = 'Tài khoản chưa xác thực';
                 } else {
+                    $user_token = md5(uniqid()) . rand();
+                    $user->setUserToken($user_token);
                     $user->setUserId($data_user['user_id']);
                     $user->setUserLoginStatus('Login');
                     if ($user->updateUserLoginStatus()) {
                         $_SESSION['user_data'][$data_user['user_id']] = [
                             "id" => $data_user['user_id'],
                             "name" => $data_user['user_name'],
-                            "profile" => $data_user['user_profile']
+                            "profile" => $data_user['user_profile'],
+                            "token" => $user_token
                         ];
                         header('location: chatroom.php');
                     } else {

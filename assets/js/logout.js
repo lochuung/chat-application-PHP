@@ -8,10 +8,14 @@ $(document).ready(function () {
                 action: 'leave',
             },
             success: function(data) {
+                console.log(data);
                 data = JSON.parse(data);
                 if (data.status === 1) {
                     location.href = 'index.php'
                 }
+            },
+            error: function (e) {
+                console.log(e);
             }
         })
     });
