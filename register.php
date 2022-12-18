@@ -27,7 +27,7 @@ if (isset($_POST['register'])) {
         $user->setUserProfile("images/placeholder.jpg");
         $user->setUserStatus('Disable');
         $user->setUserCreatedOn(time());
-        $user->setUserVerificationCode(md5(uniqid()));
+        $user->setUserVerificationCode(md5(uniqid()) . time());
         $user_data = $user->getUserDataByEmail();
         if (is_array($user_data) && count($user_data) > 0) {
             $error = 'Tài khoản đã tồn tại';

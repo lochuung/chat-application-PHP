@@ -67,6 +67,16 @@ class ChatUser
         return $user_data;
     }
 
+    function getUserDataByVerificationCode() {
+        $sql = "SELECT * FROM chat_user_table WHERE user_verification_code = :user_verification_code";
+        $statement = $this->conn->prepare($sql);
+        $statement->bindParam(':user_verification_code', $this->user_verification_code);
+        if ($statement->execute()) {
+            $user_data = $statement->fetch(PDO::FETCH_ASSOC);
+        }
+        return $user_data;
+    }
+
     function getAllUserData()
     {
         $sql = "SELECT * FROM chat_user_table";
