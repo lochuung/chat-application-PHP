@@ -1,5 +1,7 @@
 <?php
 
+use PHPMailer\PHPMailer\PHPMailer;
+
 class ChatUser
 {
     private $user_id;
@@ -20,6 +22,29 @@ class ChatUser
         $this->conn = $db->connect();
     }
 
+
+    /**
+     * @throws \PHPMailer\PHPMailer\Exception
+     */
+    function sendMail($to, $title, $body)
+    {
+        $mail = new PHPMailer(true);
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com';
+        $mail->SMTPAuth = true;
+        $mail->Username = '22110179@student.hcmute.edu.vn';
+        $mail->Password = 'TEST@123';
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = 587;
+        $mail->setFrom("22110179@student.hcmute.edu.vn", "Nhom 8");
+        $mail->addAddress($to);
+        $mail->isHTML();
+
+        $mail->Subject = $title;
+        $mail->Body = $body;
+        $mail->send();
+    }
+
     function getUserDataByEmail()
     {
         $sql = "SELECT * FROM chat_user_table WHERE user_email = :user_email";
@@ -31,7 +56,8 @@ class ChatUser
         return $user_data;
     }
 
-    function getUserDataById() {
+    function getUserDataById()
+    {
         $sql = "SELECT * FROM chat_user_table WHERE user_id = :user_id";
         $statement = $this->conn->prepare($sql);
         $statement->bindParam(':user_id', $this->user_id);
@@ -41,7 +67,15 @@ class ChatUser
         return $user_data;
     }
 
-    function saveData()
+    function getAllUserData()
+    {
+        $sql = "SELECT * FROM chat_user_table";
+        $statement = $this->conn->prepare($sql);
+        $statement->execute();
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    function saveData(): bool
     {
         $sql = "INSERT INTO chat_user_table (
             user_id,
@@ -79,7 +113,7 @@ class ChatUser
         return false;
     }
 
-    function isExistVerificationCode()
+    function isExistVerificationCode(): bool
     {
         $sql = "SELECT * FROM chat_user_table WHERE user_verification_code = :user_verification_code";
         $statement = $this->conn->prepare($sql);
@@ -91,7 +125,7 @@ class ChatUser
         return false;
     }
 
-    function enableUserAccount()
+    function enableUserAccount(): bool
     {
         $sql = "UPDATE chat_user_table SET user_status = :user_status WHERE 
         user_verification_code = :user_verification_code";
@@ -105,7 +139,7 @@ class ChatUser
         return false;
     }
 
-    function updateUserLoginStatus()
+    function updateUserLoginStatus(): bool
     {
         $sql = "UPDATE chat_user_table SET user_login_status = :user_login_status WHERE user_id = :user_id";
         $statement = $this->conn->prepare($sql);
@@ -117,7 +151,8 @@ class ChatUser
         return false;
     }
 
-    function updateData() {
+    function updateData(): bool
+    {
         $sql = "UPDATE chat_user_table SET                
     user_name = :user_name,
     user_email = :user_email,
@@ -134,7 +169,7 @@ class ChatUser
         return false;
     }
 
-    function uploadImageFile($user_profile)
+    function uploadImageFile($user_profile): string
     {
         $target_dir = "images/";
 
@@ -159,6 +194,18 @@ class ChatUser
         } else {
             return '';
         }
+    }
+
+    function updateVerificationCode(): bool
+    {
+        $sql = "UPDATE chat_user_table SET                
+    user_verification_code = :user_verification_code WHERE user_email = :user_email";
+        $statement = $this->conn->prepare($sql);
+        $statement->bindParam(':user_verification_code', $this->user_verification_code);
+        $statement->bindParam(':user_email', $this->user_email);
+        if ($statement->execute())
+            return true;
+        return false;
     }
 
     public function getUserId()

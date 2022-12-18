@@ -4,12 +4,11 @@ if (!isset($_SESSION['user_data'])) {
     header('location: index.php');
 }
 require_once "database/ChatRoom.php";
+require_once "database/ChatUser.php";
 $chat = new ChatRoom();
-$chat_data = $chat->getAllChatData();
-$user_id = '';
-foreach ($_SESSION['user_data'] as $key => $value) {
-    $user_id = $value['id'];
-}
+$user = new ChatUser();
+$chats_data = $chat->getAllChatData();
+$users_data = $user->getAllUserData();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -57,18 +56,18 @@ foreach ($_SESSION['user_data'] as $key => $value) {
                 <div class="card card-body border-end-0 border-bottom-0 rounded-bottom-0">
                     <div class="d-flex justify-content-between align-items-center">
                         <h1 class="h5 mb-0">
-                            Đang hoạt động
-                            <span class="badge bg-success bg-opacity-10 text-success"><?php echo count($_SESSION['user_data']); ?></span>
+                            Người dùng
+                            <span class="badge bg-info bg-opacity-10 text-primary"><?php echo count($users_data); ?></span>
                         </h1>
                         <!-- Chat new create message item START -->
-                        <div class="dropend position-relative">
-                            <div class="nav">
-                                <a class="icon-md rounded-circle btn btn-sm btn-primary-soft nav-link toast-btn"
-                                   data-target="chatToast" href="#">
-                                    <i class="bi bi-pencil-square"></i>
-                                </a>
-                            </div>
-                        </div>
+                        <!--                        <div class="dropend position-relative">-->
+                        <!--                            <div class="nav">-->
+                        <!--                                <a class="icon-md rounded-circle btn btn-sm btn-primary-soft nav-link toast-btn"-->
+                        <!--                                   data-target="chatToast" href="#">-->
+                        <!--                                    <i class="bi bi-pencil-square"></i>-->
+                        <!--                                </a>-->
+                        <!--                            </div>-->
+                        <!--                        </div>-->
                         <!-- Chat new create message item END -->
                     </div>
                 </div>
@@ -85,30 +84,33 @@ foreach ($_SESSION['user_data'] as $key => $value) {
                         <div class="offcanvas-body p-0">
                             <div class="card card-chat-list rounded-end-lg-0 card-body border-end-lg-0 rounded-top-0">
                                 <!-- Search chat START -->
-                                <form class="position-relative">
-                                    <input class="form-control py-2" type="search" placeholder="Search for chats"
-                                           aria-label="Search"/>
-                                    <button class="btn bg-transparent text-secondary px-2 py-0 position-absolute top-50 end-0 translate-middle-y"
-                                            type="submit">
-                                        <i class="bi bi-search fs-5"></i>
-                                    </button>
-                                </form>
+                                <!--                                <form class="position-relative">-->
+                                <!--                                    <input class="form-control py-2" type="search" placeholder="Empty input"-->
+                                <!--                                           aria-label="Search"/>-->
+                                <!--                                    <button class="btn bg-transparent text-secondary px-2 py-0 position-absolute top-50 end-0 translate-middle-y"-->
+                                <!--                                            type="submit">-->
+                                <!--                                        <i class="bi bi-search fs-5"></i>-->
+                                <!--                                    </button>-->
+                                <!--                                </form>-->
                                 <!-- Search chat END -->
                                 <!-- Chat list tab START -->
                                 <div class="mt-4 h-100">
                                     <div class="chat-tab-list custom-scrollbar">
                                         <ul class="nav flex-column nav-pills nav-pills-soft">
                                             <?php
-                                            foreach ($_SESSION['user_data'] as $key => $value) {
+                                            foreach ($users_data as $key => $user) {
+                                                $status = 'status-online';
+                                                if ($user['user_login_status'] == 'Logout')
+                                                    $status = 'status-offline';
                                                 echo '
                           <li data-bs-dismiss="offcanvas">
-                            <a href="#chat-1" class="nav-link text-start" id="chat-1-tab" data-bs-toggle="pill" role="tab">
+                            <a href="#" class="nav-link text-start" data-bs-toggle="pill" role="tab">
                               <div class="d-flex">
-                                <div class="flex-shrink-0 avatar me-2 status-online">
-                                  <img class="avatar-img rounded-circle" src="' . $value['profile'] . '" alt="" />
+                                <div class="flex-shrink-0 avatar me-2 ' . $status . '">
+                                  <img class="avatar-img rounded-circle" src="' . $user['user_profile'] . '" alt="" />
                                 </div>
-                                <div class="flex-grow-1 d-block">
-                                  <h6 class="mb-0 mt-1">' . $value['name'] . '</h6>
+                                <div class="flex-grow-1 my-auto d-block">
+                                  <h6 class="mb-0 mt-1">' . $user['user_name'] . '</h6>
                                 </div>
                               </div>
                             </a>
@@ -134,10 +136,7 @@ foreach ($_SESSION['user_data'] as $key => $value) {
                                 <div class="d-sm-flex justify-content-between align-items-center">
                                     <div class="d-flex mb-2 mb-sm-0">
                                         <div class="d-block flex-grow-1">
-                                            <h6 class="mb-0 mt-1">Phòng chat</h6>
-                                            <div class="small text-secondary">
-                                                <i class="fa-solid fa-circle text-success me-1"></i>Online
-                                            </div>
+                                            <h6 class="">Phòng chat</h6>
                                         </div>
                                     </div>
                                 </div>
@@ -146,9 +145,9 @@ foreach ($_SESSION['user_data'] as $key => $value) {
                                 <!-- Chat conversation START -->
                                 <div class="chat-conversation-content custom-scrollbar" id="message-chat">
                                     <?php
-                                    foreach ($chat_data as $key => $message) {
-                                        $date = date_create($message['created_on']);
-                                        $date = date_format($date, "H:i:s, d/m/Y");
+                                    date_default_timezone_set("Asia/Ho_Chi_Minh");
+                                    foreach ($chats_data as $key => $message) {
+                                        $date = date("H:i:s, d/m/Y",$message['created_on']);
                                         $msg = $message['message'];
                                         $user_id = $message['user_id'];
                                         if (isset($_SESSION['user_data'][$user_id])) {
@@ -208,8 +207,8 @@ foreach ($_SESSION['user_data'] as $key => $value) {
                     <div class="card-footer">
                         <form type="post" id="chat_form" class="d-sm-flex align-items-end">
                             <textarea id="chat_message" maxlength="1000" minlength="1" class="form-control mb-sm-0 mb-3"
-                                      data-autoresize="" placeholder="Nhập tin nhắn"
-                                      rows="1"></textarea>
+                                                                        data-autoresize="" placeholder="Nhập tin nhắn"
+                                                                        rows="1"></textarea>
                             <button class="btn btn-sm btn-danger-soft ms-sm-2">
                                 <i class="fa-solid fa-face-smile fs-6"></i>
                             </button>
@@ -251,6 +250,8 @@ JS libraries, plugins and custom scripts -->
         const chat_display = $("#message-chat .os-viewport-native-scrollbars-invisible");
         //scroll to down of the message chat
         chat_display.scrollTop(chat_display[0].scrollHeight);
+        $(window).scrollTop($("body")[0].scrollHeight);
+
         conn.onopen = function (e) {
             console.log("Connection established!");
         };
@@ -258,6 +259,7 @@ JS libraries, plugins and custom scripts -->
         conn.onmessage = function (e) {
             console.log(e.data);
             const data = JSON.parse(e.data);
+            data.time = (new Date(data.time)).toLocaleTimeString("vi-VN");
             let html = `            <!-- Chat name -->
                                     <div class="text-start small my-2">
                                         ${data.from}
@@ -309,6 +311,7 @@ JS libraries, plugins and custom scripts -->
 
             $('#message-chat .os-content').append(html);
             //scroll to down of the message chat
+            $(window).scrollTop($("main")[0].scrollHeight);
             chat_display.scrollTop(chat_display[0].scrollHeight);
         }
 
@@ -323,7 +326,6 @@ JS libraries, plugins and custom scripts -->
                 conn.send(JSON.stringify(data));
             }
         })
-
     })
 </script>
 </body>

@@ -44,13 +44,8 @@ class Chat implements MessageComponentInterface
         $chat = new \ChatRoom();
         $chat->setUserId($data['userId']);
         $chat->setMessage($data['msg']);
-        //set Vietnam time zone
-        date_default_timezone_set('Asia/Ho_Chi_Minh');
-        $chat->setCreatedOn(date('Y-m-d H:i:s', $data['time']));
+        $chat->setCreatedOn($data['time']);
         $chat->saveMessageData();
-
-        //change timestamp to time string
-        $data['time'] = date('H:i:s, d/m/Y', $data['time']);
 
         foreach ($this->clients as $client) {
             if ($from == $client) {
