@@ -16,9 +16,17 @@ if (isset($_POST['action']) && $_POST['action'] == 'leave') {
 
 if (isset($_POST['action']) && $_POST['action'] == 'fetch_chat_data') {
     require_once "database/PrivateChat.php";
+    require_once "database/ChatUser.php";
     $chat = new PrivateChat();
     $chat->setFromUserId($_POST['from_user_id']);
     $chat->setToUserId($_POST['to_user_id']);
     $data = $chat->getAllChatData();
+    $user = new ChatUser();
+    foreach ($data as $key => $value) {
+        $user->setUserId($value['from_user_id']);
+        $user_data = $user->getUserDataById();
+        $data[$key]['user_name'] = $user_data['user_name'];
+        $data[$key]['user_profile'] = $user_data['user_profile'];
+    }
     echo json_encode($data);
 }

@@ -258,7 +258,7 @@ JS libraries, plugins and custom scripts -->
         };
 
         conn.onmessage = function (e) {
-            console.log(e.data);
+            //console.log(e.data);
             const data = JSON.parse(e.data);
             data.time = (new Date(data.time)).toLocaleTimeString("vi-VN");
             let html = `            <!-- Chat name -->

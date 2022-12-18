@@ -11,7 +11,7 @@ class PrivateChat
     public $conn;
 
     public function __construct() {
-        require "DatabaseConnection.php";
+        require_once "DatabaseConnection.php";
         $this->conn = (new DatabaseConnection())->connect();
     }
 
@@ -86,5 +86,37 @@ class PrivateChat
         $statement->bindParam(':to_user_id', $this->to_user_id);
         $statement->execute();
         return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    function saveChat() {
+        $sql =
+            "INSERT INTO chat_message (
+        to_user_id, from_user_id,
+        chat_message, timestamp, status
+) VALUES (
+    :to_user_id,:from_user_id,:chat_message,:timestamp,:status
+)";
+        $statement = $this->conn->prepare($sql);
+        $statement->bindParam(':to_user_id', $this->to_user_id);
+        $statement->bindParam(':from_user_id', $this->from_user_id);
+        $statement->bindParam(':chat_message', $this->chat_message);
+        $statement->bindParam(':timestamp', $this->timestamp);
+        $statement->bindParam(':status', $this->status);
+        $statement->execute();
+
+        return $this->conn->lastInsertId();
+    }
+
+    function updateStatus() {
+        $sql = "UPDATE chat_user_table SET user_login_status = :user_login_status, 
+                           user_token = :user_token WHERE user_id = :user_id";
+        $statement = $this->conn->prepare($sql);
+        $statement->bindParam(':user_login_status', $this->user_login_status);
+        $statement->bindParam(':user_token', $this->user_token);
+        $statement->bindParam(':user_id', $this->user_id);
+        if ($statement->execute()) {
+            return true;
+        }
+        return false;
     }
 }

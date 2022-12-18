@@ -170,6 +170,7 @@ $users_data = $user->getAllUserDataWithStatusCount();
         </div>
     </div>
 </main>
+<input type="hidden" id="receiver-id" value=""/>
 <!-- Row END -->
 <!-- =======================
 Chat END -->
@@ -192,51 +193,129 @@ JS libraries, plugins and custom scripts -->
 <script>
     $(document).ready(function () {
         const conn = new WebSocket('ws://localhost:8080?token=<?php echo $token ?>');
-        const chat_display = $("#message-chat .os-viewport-native-scrollbars-invisible");
+        const chat_display = $("#chat-body .os-viewport-native-scrollbars-invisible");
         conn.onopen = function (e) {
             console.log("Connection established!");
         };
 
         conn.onmessage = function (e) {
-
-        };
-
-        conn.onclose = function (e) {
-            console.log("Connection is closed!");
-        }
-        $(document).on('click', '.select-user', function (e) {
-            const user_id = $(this).data('userid');
-            const receiver = {
-                id: user_id,
-                name: $(`#receiver${user_id}`).text(),
-                status: $(`#receiver_status${user_id}`).data('status'),
-                profile: $(`#receiver_profile${user_id}`)[0].src,
-            }
-            console.log(receiver.test)
-            makeChatArea(receiver.name, receiver.status, receiver.profile);
-
-            $.ajax({
-               url: "action.php",
-               method: "POST",
-               data: {
-                   action: 'fetch_chat_data',
-                   to_user_id: receiver.id,
-                   from_user_id: $('#login_user_id').val()
-               },
-                success: function (data) {
-                   data = JSON.parse(e.data);
-                   for (let i = 0; i < data.length; i++) {
-                       const time = (new Date(data[i]["timestamp"])).toLocaleTimeString("vi-VN");
-                       let html = `            <!-- Chat name -->
+            //console.log(e.data);
+            const data = JSON.parse(e.data);
+            data.time = (new Date(data.time)).toLocaleTimeString("vi-VN");
+            if (data.receiverId == $('#login_user_id').val() || data.from == 'me') {
+                let html = `            <!-- Chat name -->
                                     <div class="text-start small my-2">
-                                        ${data[i]["from_user_id"]}
+                                        ${data.from}
                                     </div>
                                     <!-- Chat message left -->
                                     <div class="d-flex mb-1">
                                         <div class="flex-shrink-0 avatar avatar-xs me-2">
                                             <img
                                                     class="avatar-img rounded-circle"
-                                                    src="${receiver.profile}"
+                                                    src="${data.userProfile}"
+                                                    alt=""
+                                            />
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="w-100">
+                                                <div class="d-flex flex-column align-items-start">
+                                                    <div
+                                                            class="bg-light text-secondary p-2 px-3 rounded-2"
+                                                    >
+                                                        ${data.msg}
+                                                    </div>
+                                                    <div class="small my-2">${data.time}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>`;
+
+                if (data.from === 'me') {
+                    html = `        <!-- Chat message right -->
+                                    <div class="d-flex justify-content-end text-end mb-1">
+                                        <div class="w-100">
+                                            <div class="d-flex flex-column align-items-end">
+                                                <div
+                                                        class="bg-primary text-white p-2 px-3 rounded-2"
+                                                >
+                                                    ${data.msg}
+                                                </div>
+                                                <div class="d-flex my-2">
+                                                    <div class="small text-secondary">${data.time}</div>
+                                                    <div class="small ms-2">
+                                                        <i class="fa-solid fa-check"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>`;
+                    $('#chat_message').val('');
+                }
+
+                $('#chat-body .os-content').append(html);
+                //scroll to down of the message chat
+                $(window).scrollTop($("main")[0].scrollHeight);
+                chat_display.scrollTop(chat_display[0].scrollHeight);
+            }
+        };
+
+        conn.onclose = function (e) {
+            console.log("Connection is closed!");
+        }
+        $(document).on('submit', '#chat_form', function (e) {
+            e.preventDefault();
+            const msg = $("#chat_message").val();
+            const receiver_id = $('#receiver-id').val();
+            if (msg.length > 0 && receiver_id.length > 0) {
+                const data = {
+                    userId: $('#login_user_id').val(),
+                    msg: msg,
+                    receiverId: receiver_id,
+                    command: 'private'
+                };
+                conn.send(JSON.stringify(data));
+            }
+        })
+
+        $(document).on('click', '.select-user', function (e) {
+            $('#chat-body .os-content').html('');
+            const user_id = $(this).data('userid');
+            $('#receiver-id').val(user_id);
+            const receiver = {
+                id: user_id,
+                name: $(`#receiver${user_id}`).text(),
+                status: $(`#receiver_status${user_id}`).data('status'),
+                profile: $(`#receiver_profile${user_id}`)[0].src,
+            }
+            makeChatArea(receiver.name, receiver.status, receiver.profile);
+            var promise = new Promise(function (resolve) {
+                $.ajax({
+                    url: "action.php",
+                    method: "POST",
+                    data: {
+                        action: 'fetch_chat_data',
+                        to_user_id: receiver.id,
+                        from_user_id: $('#login_user_id').val()
+                    },
+                    success: function (data) {
+                        data = JSON.parse(data);
+                        resolve(data);
+                    }
+                });
+            })
+            promise.then(function (data) {
+                for (let i = 0; i < data.length; i++) {
+                    const time = (new Date(data[i]["timestamp"])).toLocaleTimeString("vi-VN");
+                    let html = `            <!-- Chat name -->
+                                    <div class="text-start small my-2">
+                                        ${data[i]["user_name"]}
+                                    </div>
+                                    <!-- Chat message left -->
+                                    <div class="d-flex mb-1">
+                                        <div class="flex-shrink-0 avatar avatar-xs me-2">
+                                            <img
+                                                    class="avatar-img rounded-circle"
+                                                    src="${data[i]["user_profile"]}"
                                                     alt=""
                                             />
                                         </div>
@@ -254,8 +333,8 @@ JS libraries, plugins and custom scripts -->
                                         </div>
                                     </div>`;
 
-                       if (data[i]["from_user_id"] === $('#login_user_id').val()) {
-                           html = `        <!-- Chat message right -->
+                    if (data[i].from_user_id == $('#login_user_id').val()) {
+                        html = `        <!-- Chat message right -->
                                     <div class="d-flex justify-content-end text-end mb-1">
                                         <div class="w-100">
                                             <div class="d-flex flex-column align-items-end">
@@ -273,16 +352,20 @@ JS libraries, plugins and custom scripts -->
                                             </div>
                                         </div>
                                     </div>`;
-                       }
+                    }
 
-                       $('#message-chat .os-content').append(html);
-                       //scroll to down of the message chat
-                       $(window).scrollTop($("main")[0].scrollHeight);
-                       chat_display.scrollTop(chat_display[0].scrollHeight);
-                   }
+                    $('#chat-body .os-content').append(html);
+                }
+            }).then(function () {
+                chat_display.scrollTop(chat_display[0].scrollHeight);
+                return chat_display.scrollTop < chat_display[0].scrollHeight;
+            }).then(function (check) {
+                if (check) {
+                    setTimeout(function () {
+                        chat_display.scrollTop(chat_display[0].scrollHeight);
+                    }, 1000);
                 }
             });
-
         });
 
     })
@@ -322,7 +405,6 @@ JS libraries, plugins and custom scripts -->
                     </button>
                 </form>`;
         $('#chat-footer').html(footer);
-
     }
 </script>
 </body>
