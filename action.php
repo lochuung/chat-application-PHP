@@ -13,3 +13,12 @@ if (isset($_POST['action']) && $_POST['action'] == 'leave') {
         echo json_encode(["status"=>1]);
     }
 }
+
+if (isset($_POST['action']) && $_POST['action'] == 'fetch_chat_data') {
+    require_once "database/PrivateChat.php";
+    $chat = new PrivateChat();
+    $chat->setFromUserId($_POST['from_user_id']);
+    $chat->setToUserId($_POST['to_user_id']);
+    $data = $chat->getAllChatData();
+    echo json_encode($data);
+}

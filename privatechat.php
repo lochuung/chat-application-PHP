@@ -192,7 +192,7 @@ JS libraries, plugins and custom scripts -->
 <script>
     $(document).ready(function () {
         const conn = new WebSocket('ws://localhost:8080?token=<?php echo $token ?>');
-
+        const chat_display = $("#message-chat .os-viewport-native-scrollbars-invisible");
         conn.onopen = function (e) {
             console.log("Connection established!");
         };
@@ -214,6 +214,74 @@ JS libraries, plugins and custom scripts -->
             }
             console.log(receiver.test)
             makeChatArea(receiver.name, receiver.status, receiver.profile);
+
+            $.ajax({
+               url: "action.php",
+               method: "POST",
+               data: {
+                   action: 'fetch_chat_data',
+                   to_user_id: receiver.id,
+                   from_user_id: $('#login_user_id').val()
+               },
+                success: function (data) {
+                   data = JSON.parse(e.data);
+                   for (let i = 0; i < data.length; i++) {
+                       const time = (new Date(data[i]["timestamp"])).toLocaleTimeString("vi-VN");
+                       let html = `            <!-- Chat name -->
+                                    <div class="text-start small my-2">
+                                        ${data[i]["from_user_id"]}
+                                    </div>
+                                    <!-- Chat message left -->
+                                    <div class="d-flex mb-1">
+                                        <div class="flex-shrink-0 avatar avatar-xs me-2">
+                                            <img
+                                                    class="avatar-img rounded-circle"
+                                                    src="${receiver.profile}"
+                                                    alt=""
+                                            />
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="w-100">
+                                                <div class="d-flex flex-column align-items-start">
+                                                    <div
+                                                            class="bg-light text-secondary p-2 px-3 rounded-2"
+                                                    >
+                                                        ${data[i]["chat_message"]}
+                                                    </div>
+                                                    <div class="small my-2">${time}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>`;
+
+                       if (data[i]["from_user_id"] === $('#login_user_id').val()) {
+                           html = `        <!-- Chat message right -->
+                                    <div class="d-flex justify-content-end text-end mb-1">
+                                        <div class="w-100">
+                                            <div class="d-flex flex-column align-items-end">
+                                                <div
+                                                        class="bg-primary text-white p-2 px-3 rounded-2"
+                                                >
+                                                    ${data[i]["chat_message"]}
+                                                </div>
+                                                <div class="d-flex my-2">
+                                                    <div class="small text-secondary">${time}</div>
+                                                    <div class="small ms-2">
+                                                        <i class="fa-solid fa-check"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>`;
+                       }
+
+                       $('#message-chat .os-content').append(html);
+                       //scroll to down of the message chat
+                       $(window).scrollTop($("main")[0].scrollHeight);
+                       chat_display.scrollTop(chat_display[0].scrollHeight);
+                   }
+                }
+            });
 
         });
 
