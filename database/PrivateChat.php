@@ -108,12 +108,22 @@ class PrivateChat
     }
 
     function updateStatus() {
-        $sql = "UPDATE chat_user_table SET user_login_status = :user_login_status, 
-                           user_token = :user_token WHERE user_id = :user_id";
+        $sql = "UPDATE chat_message SET status = :status WHERE chat_message_id = :chat_message_id";
         $statement = $this->conn->prepare($sql);
-        $statement->bindParam(':user_login_status', $this->user_login_status);
-        $statement->bindParam(':user_token', $this->user_token);
-        $statement->bindParam(':user_id', $this->user_id);
+        $statement->bindParam(':status', $this->status);
+        $statement->bindParam(':chat_message_id', $this->chat_message_id);
+        if ($statement->execute()) {
+            return true;
+        }
+        return false;
+    }
+
+    function changeStatus() {
+        $sql = "UPDATE chat_message SET status = :status WHERE from_user_id = :from_user_id AND to_user_id = :to_user_id";
+        $statement = $this->conn->prepare($sql);
+        $statement->bindParam(':status', $this->status);
+        $statement->bindParam(':from_user_id', $this->from_user_id);
+        $statement->bindParam(':to_user_id', $this->to_user_id);
         if ($statement->execute()) {
             return true;
         }

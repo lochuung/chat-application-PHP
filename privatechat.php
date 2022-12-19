@@ -111,7 +111,7 @@ $users_data = $user->getAllUserDataWithStatusCount();
                                                 if ($user['user_id'] != $login_user_id) {
                                                     $total_unread = '';
                                                     if ($user['count_status'] > 0)
-                                                        $total_unread = $users_data['count_status'];
+                                                        $total_unread = $user['count_status'];
                                                     echo '
                                           <li data-bs-dismiss="offcanvas">
                                             <a class="nav-link text-start select-user" data-userid="' . $user['user_id'] . '" data-bs-toggle="pill" role="tab">
@@ -121,7 +121,7 @@ $users_data = $user->getAllUserDataWithStatusCount();
                                                 </div>
                                                 <div class="flex-grow-1 my-auto d-block">
                                                   <h6 class="mb-0 mt-1" id="receiver' . $user['user_id'] . '">' . $user['user_name'] . '</h6>
-                                                  <span class="badge bg-danger badge-pill">' . $total_unread . '</span>
+                                                  <span id="receiver_notification' . $user['user_id'] . '" class="badge bg-danger badge-pill">' . $total_unread . '</span>
                                                 </div>
                                               </div>
                                             </a>
@@ -194,6 +194,7 @@ JS libraries, plugins and custom scripts -->
     $(document).ready(function () {
         const conn = new WebSocket('ws://localhost:8080?token=<?php echo $token ?>');
         const chat_display = $("#chat-body .os-viewport-native-scrollbars-invisible");
+        let userListSelect = 0;
         conn.onopen = function (e) {
             console.log("Connection established!");
         };
@@ -202,7 +203,7 @@ JS libraries, plugins and custom scripts -->
             //console.log(e.data);
             const data = JSON.parse(e.data);
             data.time = (new Date(data.time)).toLocaleTimeString("vi-VN");
-            if (data.receiverId == $('#login_user_id').val() || data.from == 'me') {
+            if ((data.receiverId == $('#login_user_id').val() && userListSelect == data.userId) || data.from == 'me') {
                 let html = `            <!-- Chat name -->
                                     <div class="text-start small my-2">
                                         ${data.from}
@@ -256,6 +257,15 @@ JS libraries, plugins and custom scripts -->
                 //scroll to down of the message chat
                 $(window).scrollTop($("main")[0].scrollHeight);
                 chat_display.scrollTop(chat_display[0].scrollHeight);
+            } else {
+                const notifi = $(`#receiver_notification${data.userId}`);
+                let count = notifi.text();
+                if (count == '') {
+                    count = 0;
+                }
+                count++;
+                console.log(count);
+                notifi.text(count);
             }
         };
 
@@ -280,6 +290,7 @@ JS libraries, plugins and custom scripts -->
         $(document).on('click', '.select-user', function (e) {
             $('#chat-body .os-content').html('');
             const user_id = $(this).data('userid');
+            userListSelect = user_id;
             $('#receiver-id').val(user_id);
             const receiver = {
                 id: user_id,
@@ -357,14 +368,14 @@ JS libraries, plugins and custom scripts -->
                     $('#chat-body .os-content').append(html);
                 }
             }).then(function () {
+                const notifi = $(`#receiver_notification${userListSelect}`);
+                notifi.text('');
                 chat_display.scrollTop(chat_display[0].scrollHeight);
                 return chat_display.scrollTop < chat_display[0].scrollHeight;
             }).then(function (check) {
-                if (check) {
-                    setTimeout(function () {
-                        chat_display.scrollTop(chat_display[0].scrollHeight);
-                    }, 1000);
-                }
+                setTimeout(function () {
+                    chat_display.scrollTop(chat_display[0].scrollHeight);
+                }, 500);
             });
         });
 

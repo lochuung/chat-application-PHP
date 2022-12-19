@@ -18,8 +18,10 @@ if (isset($_POST['action']) && $_POST['action'] == 'fetch_chat_data') {
     require_once "database/PrivateChat.php";
     require_once "database/ChatUser.php";
     $chat = new PrivateChat();
-    $chat->setFromUserId($_POST['from_user_id']);
-    $chat->setToUserId($_POST['to_user_id']);
+    $chat->setFromUserId($_POST['to_user_id']);
+    $chat->setToUserId($_POST['from_user_id']);
+    $chat->setStatus('Y');
+    $chat->changeStatus();
     $data = $chat->getAllChatData();
     $user = new ChatUser();
     foreach ($data as $key => $value) {
