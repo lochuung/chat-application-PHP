@@ -31,7 +31,17 @@ class Chat implements MessageComponentInterface
         $user->setUserToken($queryarray['token']);
         $user->setUserConnectionId($conn->resourceId);
         $user->updateUserConnectionId();
-        
+        $data['status_type'] = 'online';
+        $data['status_user_id'] = $user->getUserIdByToken();
+        $user->setUserId($data['status_user_id']);
+        $user->setUserLoginStatus('Login');
+        $user->setUserToken($queryarray['token']);
+        $user->updateUserLoginStatus();
+        $data['online_user'] = $user->countOnlineUser();
+        foreach ($this->clients as $client) {
+            $client->send(json_encode($data));
+        }
+
         echo "New connection! ({$conn->resourceId})\n";
     }
 
@@ -43,6 +53,7 @@ class Chat implements MessageComponentInterface
 
         $data = json_decode($msg, true);
 
+        $user = new \ChatUser();
         if ($data['command'] == 'private') {
             $chat = new \PrivateChat();
             $chat->setToUserId($data['receiverId']);
@@ -55,7 +66,6 @@ class Chat implements MessageComponentInterface
 
             $message_id = $chat->saveChat();
             $data['test'] = $message_id;
-            $user = new \ChatUser();
             $user->setUserId($data['userId']);
             $sender_data = $user->getUserDataById();
 
@@ -73,14 +83,13 @@ class Chat implements MessageComponentInterface
                 if ($client->resourceId == $receiver_data['user_connection_id'] || $from == $client) {
                     $client->send(json_encode($data));
                 } else {
-                     $chat->setStatus('N');
-                     $chat->setChatMessageId($message_id);
-                     $chat->updateStatus();
+                    $chat->setStatus('N');
+                    $chat->setChatMessageId($message_id);
+                    $chat->updateStatus();
                 }
             }
 
         } else {
-            $user = new \ChatUser();
             $user->setUserId($data['userId']);
             $user_data = $user->getUserDataById();
 
@@ -111,6 +120,23 @@ class Chat implements MessageComponentInterface
         // The connection is closed, remove it, as we can no longer send it messages
         $this->clients->detach($conn);
 
+        $querystring = $conn->httpRequest->getUri()->getQuery();
+        $queryarray = array();
+        parse_str($querystring, $queryarray);
+        $user = new \ChatUser();
+        $data['status_type'] = 'offline';
+        $user->setUserToken($queryarray['token']);
+        $data['status_user_id'] = $user->getUserIdByToken();
+
+        $user->setUserId($data['status_user_id']);
+        $user->setUserLoginStatus('Logout');
+        $user->setUserToken($queryarray['token']);
+        $user->updateUserLoginStatus();
+        $data['online_user'] = $user->countOnlineUser();
+
+        foreach ($this->clients as $client) {
+            $client->send(json_encode($data));
+        }
         echo "Connection {$conn->resourceId} has disconnected\n";
     }
 

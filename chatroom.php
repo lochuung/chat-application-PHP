@@ -9,6 +9,12 @@ $chat = new ChatRoom();
 $user = new ChatUser();
 $chats_data = $chat->getAllChatData();
 $users_data = $user->getAllUserData();
+$token = '';
+$login_user_id = '';
+foreach ($_SESSION['user_data'] as $key => $value) {
+    $token = $value['token'];
+    $login_user_id = $value['id'];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -102,11 +108,12 @@ $users_data = $user->getAllUserData();
                                                 $status = 'status-online';
                                                 if ($user['user_login_status'] == 'Logout')
                                                     $status = 'status-offline';
-                                                echo '
+                                                if ($user['user_id'] != $login_user_id) {
+                                                    echo '
                           <li data-bs-dismiss="offcanvas">
-                            <a href="#" class="nav-link text-start" data-bs-toggle="pill" role="tab">
+                            <a href="#" class="nav-link text-start">
                               <div class="d-flex">
-                                <div class="flex-shrink-0 avatar me-2 ' . $status . '">
+                                <div id="receiver_status' . $user['user_id'] . '" class="flex-shrink-0 avatar me-2 ' . $status . '" data-status="' . $status . '">
                                   <img class="avatar-img rounded-circle" src="' . $user['user_profile'] . '" alt="" />
                                 </div>
                                 <div class="flex-grow-1 my-auto d-block">
@@ -115,6 +122,7 @@ $users_data = $user->getAllUserData();
                               </div>
                             </a>
                           </li>';
+                                                }
                                             }
                                             ?>
                                         </ul>
@@ -148,7 +156,7 @@ $users_data = $user->getAllUserData();
                                     <?php
                                     date_default_timezone_set("Asia/Ho_Chi_Minh");
                                     foreach ($chats_data as $key => $message) {
-                                        $date = date("H:i:s, d/m/Y",$message['created_on']);
+                                        $date = date("H:i:s, d/m/Y", $message['created_on']);
                                         $msg = $message['message'];
                                         $user_id = $message['user_id'];
                                         if (isset($_SESSION['user_data'][$user_id])) {
@@ -208,8 +216,8 @@ $users_data = $user->getAllUserData();
                     <div class="card-footer">
                         <form type="post" id="chat_form" class="d-sm-flex align-items-end">
                             <textarea id="chat_message" maxlength="1000" minlength="1" class="form-control mb-sm-0 mb-3"
-                                                                        data-autoresize="" placeholder="Nhập tin nhắn"
-                                                                        rows="1"></textarea>
+                                      data-autoresize="" placeholder="Nhập tin nhắn"
+                                      rows="1"></textarea>
                             <button class="btn btn-sm btn-danger-soft ms-sm-2">
                                 <i class="fa-solid fa-face-smile fs-6"></i>
                             </button>
@@ -247,7 +255,7 @@ JS libraries, plugins and custom scripts -->
 <script src="assets/js/logout.js"></script>
 <script>
     $(document).ready(function () {
-        const conn = new WebSocket('ws://localhost:8080');
+        const conn = new WebSocket('ws://localhost:8080/?token=<?php echo $token; ?>');
         const chat_display = $("#message-chat .os-viewport-native-scrollbars-invisible");
         //scroll to down of the message chat
         chat_display.scrollTop(chat_display[0].scrollHeight);
@@ -260,8 +268,18 @@ JS libraries, plugins and custom scripts -->
         conn.onmessage = function (e) {
             //console.log(e.data);
             const data = JSON.parse(e.data);
-            data.time = (new Date(data.time)).toLocaleTimeString("vi-VN");
-            let html = `            <!-- Chat name -->
+            const status = $(`#receiver_status${data.status_user_id}`);
+            console.log(status);
+            if (data.status_type == 'online') {
+                status.removeClass('status-offline');
+                status.addClass('status-online');
+
+            } else if (data.status_type == 'offline') {
+                status.removeClass('status-online');
+                status.addClass('status-offline');
+            } else {
+                data.time = (new Date(data.time * 1000)).toLocaleTimeString("vi-VN");
+                let html = `            <!-- Chat name -->
                                     <div class="text-start small my-2">
                                         ${data.from}
                                     </div>
@@ -288,8 +306,8 @@ JS libraries, plugins and custom scripts -->
                                         </div>
                                     </div>`;
 
-            if (data.from === 'me') {
-                html = `        <!-- Chat message right -->
+                if (data.from === 'me') {
+                    html = `        <!-- Chat message right -->
                                     <div class="d-flex justify-content-end text-end mb-1">
                                         <div class="w-100">
                                             <div class="d-flex flex-column align-items-end">
@@ -307,13 +325,14 @@ JS libraries, plugins and custom scripts -->
                                             </div>
                                         </div>
                                     </div>`;
-                $('#chat_message').val('');
-            }
+                    $('#chat_message').val('');
+                }
 
-            $('#message-chat .os-content').append(html);
-            //scroll to down of the message chat
-            $(window).scrollTop($("main")[0].scrollHeight);
-            chat_display.scrollTop(chat_display[0].scrollHeight);
+                $('#message-chat .os-content').append(html);
+                //scroll to down of the message chat
+                $(window).scrollTop($("main")[0].scrollHeight);
+                chat_display.scrollTop(chat_display[0].scrollHeight);
+            }
         }
 
         $('#chat_form').on('submit', function (e) {

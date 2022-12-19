@@ -80,6 +80,14 @@ class ChatUser
         return $user_data;
     }
 
+    function getUserIdByToken() {
+        $sql = "SELECT user_id FROM chat_user_table WHERE user_token = :user_token";
+        $statement = $this->conn->prepare($sql);
+        $statement->bindParam(':user_token', $this->user_token);
+        $statement->execute();
+        return $statement->fetch(PDO::FETCH_ASSOC)['user_id'];
+    }
+
     function getAllUserData()
     {
         $sql = "SELECT * FROM chat_user_table";
@@ -97,6 +105,14 @@ class ChatUser
         $statement->bindParam(':user_id', $this->user_id);
         $statement->execute();
         return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    function countOnlineUser(): int
+    {
+        $sql = "SELECT user_id FROM chat_user_table WHERE user_login_status = 'Login'";
+        $statement = $this->conn->prepare($sql);
+        $statement->execute();
+        return $statement->rowCount();
     }
 
     function saveData(): bool

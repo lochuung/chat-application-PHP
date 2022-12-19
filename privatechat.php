@@ -14,6 +14,7 @@ foreach ($_SESSION['user_data'] as $key => $value) {
 $user = new ChatUser();
 $user->setUserId($login_user_id);
 $users_data = $user->getAllUserDataWithStatusCount();
+$count_online_user = $user->countOnlineUser();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -62,8 +63,9 @@ $users_data = $user->getAllUserDataWithStatusCount();
                 <div class="card card-body border-end-0 border-bottom-0 rounded-bottom-0">
                     <div class="d-flex justify-content-between align-items-center">
                         <h1 class="h5 mb-0">
-                            Người dùng
-                            <span class="badge bg-info bg-opacity-10 text-primary">0</span>
+                            Đang hoạt động
+                            <span class="badge bg-success bg-opacity-10 text-success"
+                                  id="online-user"><?php echo ($count_online_user - 1) ?></span>
                         </h1>
                         <!-- Chat new create message item START -->
                         <!--                        <div class="dropend position-relative">-->
@@ -202,9 +204,31 @@ JS libraries, plugins and custom scripts -->
         conn.onmessage = function (e) {
             //console.log(e.data);
             const data = JSON.parse(e.data);
-            data.time = (new Date(data.time)).toLocaleTimeString("vi-VN");
-            if ((data.receiverId == $('#login_user_id').val() && userListSelect == data.userId) || data.from == 'me') {
-                let html = `            <!-- Chat name -->
+            const status = $(`#receiver_status${data.status_user_id}`);
+            const statusIconChatArea = $(`#chat-area-status-icon${data.status_user_id}`);
+            const statusChatArea = $(`#chat-area-status${data.status_user_id}`);
+            console.log(data);
+            $("#online-user").text(data.online_user);
+            if (data.status_type == 'online') {
+                status.removeClass('status-offline');
+                status.addClass('status-online');
+                status[0].dataset.status = 'status-online';
+                statusIconChatArea.removeClass('text-danger');
+                statusIconChatArea.addClass('text-success');
+                statusChatArea.text('Online');
+
+            } else if (data.status_type == 'offline') {
+                status.removeClass('status-online');
+                status.addClass('status-offline');
+                status[0].dataset.status = 'status-offline';
+                ;
+                statusIconChatArea.removeClass('text-success');
+                statusIconChatArea.addClass('text-danger');
+                statusChatArea.text('Offline');
+            } else {
+                data.time = (new Date(data.time * 1000)).toLocaleTimeString("vi-VN");
+                if ((data.receiverId == $('#login_user_id').val() && userListSelect == data.userId) || data.from == 'me') {
+                    let html = `            <!-- Chat name -->
                                     <div class="text-start small my-2">
                                         ${data.from}
                                     </div>
@@ -231,8 +255,8 @@ JS libraries, plugins and custom scripts -->
                                         </div>
                                     </div>`;
 
-                if (data.from === 'me') {
-                    html = `        <!-- Chat message right -->
+                    if (data.from === 'me') {
+                        html = `        <!-- Chat message right -->
                                     <div class="d-flex justify-content-end text-end mb-1">
                                         <div class="w-100">
                                             <div class="d-flex flex-column align-items-end">
@@ -250,22 +274,23 @@ JS libraries, plugins and custom scripts -->
                                             </div>
                                         </div>
                                     </div>`;
-                    $('#chat_message').val('');
-                }
+                        $('#chat_message').val('');
+                    }
 
-                $('#chat-body .os-content').append(html);
-                //scroll to down of the message chat
-                $(window).scrollTop($("main")[0].scrollHeight);
-                chat_display.scrollTop(chat_display[0].scrollHeight);
-            } else {
-                const notifi = $(`#receiver_notification${data.userId}`);
-                let count = notifi.text();
-                if (count == '') {
-                    count = 0;
+                    $('#chat-body .os-content').append(html);
+                    //scroll to down of the message chat
+                    $(window).scrollTop($("main")[0].scrollHeight);
+                    chat_display.scrollTop(chat_display[0].scrollHeight);
+                } else {
+                    const notifi = $(`#receiver_notification${data.userId}`);
+                    let count = notifi.text();
+                    if (count == '') {
+                        count = 0;
+                    }
+                    count++;
+                    console.log(count);
+                    notifi.text(count);
                 }
-                count++;
-                console.log(count);
-                notifi.text(count);
             }
         };
 
@@ -298,7 +323,7 @@ JS libraries, plugins and custom scripts -->
                 status: $(`#receiver_status${user_id}`).data('status'),
                 profile: $(`#receiver_profile${user_id}`)[0].src,
             }
-            makeChatArea(receiver.name, receiver.status, receiver.profile);
+            makeChatArea(receiver.id, receiver.name, receiver.status, receiver.profile);
             var promise = new Promise(function (resolve) {
                 $.ajax({
                     url: "action.php",
@@ -316,7 +341,7 @@ JS libraries, plugins and custom scripts -->
             })
             promise.then(function (data) {
                 for (let i = 0; i < data.length; i++) {
-                    const time = (new Date(data[i]["timestamp"])).toLocaleTimeString("vi-VN");
+                    const time = (new Date(data[i]["timestamp"] * 1000)).toLocaleTimeString("vi-VN");
                     let html = `            <!-- Chat name -->
                                     <div class="text-start small my-2">
                                         ${data[i]["user_name"]}
@@ -381,7 +406,7 @@ JS libraries, plugins and custom scripts -->
 
     })
 
-    function makeChatArea(name, status, profile) {
+    function makeChatArea(id, name, status, profile) {
         status = (status === 'status-online') ? "Online" : "Offline";
         const status_color = status === 'Online' ? "text-success" : "text-danger";
         const header =
@@ -391,8 +416,8 @@ JS libraries, plugins and custom scripts -->
             <div class="d-block flex-grow-1">
               <h6 class="mb-0 mt-1">${name}</h6>
               <div class="small text-secondary">
-                <i class="fa-solid fa-circle ${status_color} me-1"></i>
-                ${status}
+                <i id="chat-area-status-icon${id}" class="fa-solid fa-circle ${status_color} me-1"></i>
+                <p id="chat-area-status${id}">${status}</p>
               </div>
             </div>`;
 
