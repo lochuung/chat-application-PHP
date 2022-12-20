@@ -3,6 +3,8 @@
 use PHPMailer\PHPMailer\Exception;
 
 require 'vendor/autoload.php';
+require_once dirname(__DIR__) . "/database/ChatUser.php";
+$user = new ChatUser();
 function LoginHandle()
 {
     global $error;
@@ -125,7 +127,6 @@ function editPasswordInForgotHandle() {
 
 function sendResetPasswordCodeHandle() {
     global $error, $user;
-    $user = new ChatUser();
     if (isset($_POST['forgot'])) {
         if (!filter_var($_POST['user_email'], FILTER_VALIDATE_EMAIL)) {
             $error = 'Email không hợp lệ';
