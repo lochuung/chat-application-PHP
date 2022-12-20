@@ -1,125 +1,16 @@
 <?php
-
-use PHPMailer\PHPMailer\Exception;
-
-require 'vendor/autoload.php';
-require_once "database/ChatUser.php";
+$title = 'Quên mật khẩu';
+require_once "bin/auth_function.php";
 session_start();
 $error = '';
 if (isset($_SESSION['user_data'])) {
     header('location: chatroom.php');
 }
-$user = new ChatUser();
-
-if (isset($_POST['forgot']) && isset($_GET['code'])) {
-    if (strlen($_POST['user_password']) < 8) {
-        $message_pass = 'Mật khẩu mới không hợp lệ';
-    } else {
-        $user->setUserVerificationCode($_GET['code']);
-        $user_data = $user->getUserDataByVerificationCode();
-        $user->setUserId($user_data['user_id']);
-        $user->setUserName($user_data['user_name']);
-        $user->setUserEmail($user_data['user_email']);
-        $user->setUserPassword(password_hash($_POST['user_password'], PASSWORD_DEFAULT));
-        $user->setUserProfile($user_data['user_profile']);
-        if ($user->updateData()) {
-            $_SESSION['success_message'] = 'Đã đặt lại mật khẩu thành công.';
-            header('location: index.php');
-        } else {
-            $error = 'Có lỗi xảy ra, vui lòng thử lại';
-        }
-    }
-}
-
-if (isset($_POST['forgot'])) {
-    if (!filter_var($_POST['user_email'], FILTER_VALIDATE_EMAIL)) {
-        $error = 'Email không hợp lệ';
-    } else {
-        $user->setUserEmail($_POST['user_email']);
-        $user_data = $user->getUserDataByEmail();
-        if (!is_array($user_data) || count($user_data) == 0) {
-            $error = 'Email không tồn tại';
-        } else if ($user_data['user_status'] != 'Enable') {
-            $error = 'Tài khoản chưa được kích hoạt';
-        } else {
-            $user->setUserVerificationCode(md5(uniqid()) . time());
-            if ($user->updateVerificationCode()) {
-                $title = 'Doi mat khau - Chat App';
-                $verify_link = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . "{$_SERVER['HTTP_HOST']}/"
-                    . "forgot.php?code=" . $user->getUserVerificationCode();
-                $body = '
-                <p>Có phải bạn đã gửi yêu cầu đổi mật khẩu không?</p>
-                
-                <p>Nếu bạn muốn đổi mật khẩu thì: </p> <a href="' . $verify_link . '">
-                Nhấn vào đây!
-                </a>
-                
-                <p>Cảm ơn! – Nhóm 8</p>';
-                try {
-                    $_SESSION['success_message'] = 'Kiểm tra mail ' . $_POST['user_email'] . ' để đặt lại mật khẩu.';
-                    $user->sendMail($_POST['user_email'], $title, $body);
-                    header('location: index.php');
-                } catch (Exception $e) {
-                    $error = 'Có lỗi xảy ra khi gửi xác thực đến mail của bạn, vui lòng liên hệ với ban quản trị';
-                    $error = $error . '<br> ' . $e->errorMessage();
-                }
-            } else {
-                $error = 'Có lỗi xảy ra vui lòng thử lại';
-            }
-        }
-    }
-}
-
+$user = null;
+sendResetPasswordCodeHandle();
+editPasswordInForgotHandle();
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>Quên mật khẩu</title>
-
-    <!-- Meta Tags -->
-    <meta charset="utf-8"/>
-    <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1, shrink-to-fit=no"
-    />
-    <meta name="author" content="Webestica.com"/>
-    <meta
-            name="description"
-            content="Bootstrap 5 based Social Media Network and Community Theme"
-    />
-
-    <!-- Favicon -->
-    <link rel="shortcut icon" href="assets/images/favicon.ico"/>
-
-    <!-- Google Font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com"/>
-    <link
-            rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-    />
-
-    <!-- Plugins CSS -->
-    <link
-            rel="stylesheet"
-            type="text/css"
-            href="assets/vendor/font-awesome/css/all.min.css"
-    />
-    <link
-            rel="stylesheet"
-            type="text/css"
-            href="assets/vendor/bootstrap-icons/bootstrap-icons.css"
-    />
-
-    <!-- Theme CSS -->
-    <link
-            id="style-switch"
-            rel="stylesheet"
-            type="text/css"
-            href="assets/css/style.css"
-    />
-</head>
-
-<body>
+<?php include_once "part/header.php" ?>
 <!-- **************** MAIN CONTENT START **************** -->
 <main>
     <!-- Container START -->
@@ -222,16 +113,4 @@ if (isset($_POST['forgot'])) {
 
 <!-- **************** MAIN CONTENT END **************** -->
 
-<!-- =======================
-JS libraries, plugins and custom scripts -->
-
-<!-- Bootstrap JS -->
-<script src="assets/vendor/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- Vendors -->
-<script src="assets/vendor/pswmeter/pswmeter.min.js"></script>
-
-<!-- Template Functions -->
-<script src="assets/js/functions.js"></script>
-</body>
-</html>
+<?php include_once "part/footer.php" ?>

@@ -56,36 +56,33 @@ class Chat implements MessageComponentInterface
         $user = new \ChatUser();
         if ($data['command'] == 'private') {
             $chat = new \PrivateChat();
-            $chat->setToUserId($data['receiverId']);
-            $chat->setFromUserId($data['userId']);
-            $chat->setChatMessage($data['msg']);
-            $chat->setStatus('Y');
+            $chat->setToUserId($data['pv_receiverId']);
+            $chat->setFromUserId($data['pv_userId']);
+            $chat->setChatMessage($data['pv_msg']);
+            $chat->setStatus('N');
             //set time
-            $data['time'] = time();
-            $chat->setTimestamp($data['time']);
+            $data['pv_time'] = time();
+            $chat->setTimestamp($data['pv_time']);
 
             $message_id = $chat->saveChat();
-            $data['test'] = $message_id;
-            $user->setUserId($data['userId']);
+            $user->setUserId($data['pv_userId']);
             $sender_data = $user->getUserDataById();
 
-            $user->setUserId($data['receiverId']);
+            $user->setUserId($data['pv_receiverId']);
             $receiver_data = $user->getUserDataById();
             //set profile
-            $data['userProfile'] = $sender_data['user_profile'];
+            $data['pv_userProfile'] = $sender_data['user_profile'];
+            //online user
+            $data['online_user'] = $user->countOnlineUser();
             foreach ($this->clients as $client) {
                 if ($from == $client) {
-                    $data['from'] = 'me';
+                    $data['pv_from'] = 'me';
                 } else {
-                    $data['from'] = $sender_data['user_name'];
+                    $data['pv_from'] = $sender_data['user_name'];
                 }
 
                 if ($client->resourceId == $receiver_data['user_connection_id'] || $from == $client) {
                     $client->send(json_encode($data));
-                } else {
-                    $chat->setStatus('N');
-                    $chat->setChatMessageId($message_id);
-                    $chat->updateStatus();
                 }
             }
 

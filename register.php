@@ -1,86 +1,16 @@
 <?php
-
-use PHPMailer\PHPMailer\Exception;
-
-require 'vendor/autoload.php';
-
+$title = 'Đăng ký';
 session_start();
+require_once "bin/auth_function.php";
 if (isset($_SESSION['user_data'])) {
     header('location:chatroom.php');
 }
-
 $error = '';
 $success_message = '';
-if (isset($_POST['register'])) {
-    if (!isset($_POST['user_name']) || strlen($_POST['user_name']) < 1) {
-        $error = "Tên người dùng không được để trống.";
-    } else if (strlen($_POST['user_email']) < 1 || !filter_var($_POST['user_email'], FILTER_VALIDATE_EMAIL)) {
-        $error = 'Email không hợp lệ.';
-    } else if (strlen($_POST['user_password']) < 8) {
-        $error = 'Mật khẩu không hợp lệ';
-    } else {
-        require_once "database/ChatUser.php";
-        $user = new ChatUser();
-        $user->setUserName($_POST['user_name']);
-        $user->setUserEmail($_POST['user_email']);
-        $user->setUserPassword(password_hash($_POST['user_password'], PASSWORD_DEFAULT));
-        $user->setUserProfile("images/placeholder.jpg");
-        $user->setUserStatus('Disable');
-        $user->setUserCreatedOn(time());
-        $user->setUserVerificationCode(md5(uniqid()) . time());
-        $user_data = $user->getUserDataByEmail();
-        if (is_array($user_data) && count($user_data) > 0) {
-            $error = 'Tài khoản đã tồn tại';
-        } else {
-            if ($user->saveData()) {
-                $title = 'Xac minh dang ky - Chat App';
-                $verify_link = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . "{$_SERVER['HTTP_HOST']}/"
-                    . "verify.php?code=" . $user->getUserVerificationCode();
-                $body = '
-                <p>Chúng tôi chỉ cần xác minh địa chỉ email của bạn trước khi bạn có thể truy cập vào Chat App</p>
-                
-                <p>Xác minh địa chỉ email của bạn: </p> <a href="' . $verify_link . '">
-                Nhấn vào đây!
-                </a>
-                
-                <p>Cảm ơn! – Nhóm 8</p>';
-                try {
-                    $user->sendMail($_POST['user_email'], $title, $body);
-                    $success_message = 'Kiểm tra email được gửi tới ' . $user->getUserEmail()
-                        . ' để xác thực đăng ký.';
-                } catch (Exception $e) {
-                    $error = 'Có lỗi xảy ra khi gửi xác thực đến mail của bạn, vui lòng liên hệ với ban quản trị';
-                    $error = $error . '<br> ' . $e->errorMessage();
-                }
-            } else {
-                $error = 'Đã có lỗi xảy ra, vui lòng thử lại';
-            }
-        }
-    }
-}
+RegisterHandle();
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <title>Đăng ký - Chat Application</title>
-
-    <!-- Meta Tags -->
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
-    <!-- Google Font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com"/>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"/>
-
-    <!-- Plugins CSS -->
-    <link rel="stylesheet" type="text/css" href="assets/vendor/font-awesome/css/all.min.css"/>
-    <link rel="stylesheet" type="text/css" href="assets/vendor/bootstrap-icons/bootstrap-icons.css"/>
-    <!-- Theme CSS -->
-    <link id="style-switch" rel="stylesheet" type="text/css" href="assets/css/style.css"/>
-</head>
-
-<body>
+<?php include_once "part/header.php"?>
 <!-- **************** MAIN CONTENT START **************** -->
 <main>
     <!-- Container START -->
@@ -168,16 +98,5 @@ if (isset($_POST['register'])) {
 
 <!-- **************** MAIN CONTENT END **************** -->
 
-<!-- =======================
-JS libraries, plugins and custom scripts -->
 
-<!-- Bootstrap JS -->
-<script src="assets/vendor/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- Vendors -->
-<script src="assets/vendor/pswmeter/pswmeter.min.js"></script>
-<!-- Template Functions -->
-<script src="assets/js/functions.js"></script>
-</body>
-
-</html>
+<?php include_once "part/footer.php" ?>

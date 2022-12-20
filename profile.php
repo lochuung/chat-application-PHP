@@ -1,113 +1,18 @@
 <?php
-$message = '';
-$message_pass = '';
+$title = 'Sửa hồ sơ';
 session_start();
 if (!isset($_SESSION['user_data'])) {
     header('location: index.php');
 }
-require_once "database/ChatUser.php";
-$user = new ChatUser();
-$user_id = '';
-foreach ($_SESSION['user_data'] as $key => $value) {
-    $user_id = $value['id'];
-}
+$user_data = array();
+require_once "bin/profile_function.php";
+$message = '';
+$message_pass = '';
+editProfileHandle();
 
-$user->setUserId($user_id);
-$user_data = $user->getUserDataById();
-$user->setUserName($user_data['user_name']);
-$user->setUserEmail($user_data['user_email']);
-$user->setUserPassword($user_data['user_password']);
-$user->setUserProfile($user_data['user_profile']);
-
-if (isset($_POST['edit'])) {
-    if (isset($_FILES['user_profile']['name'])) {
-        $user_profile = $user->uploadImageFile($_FILES['user_profile']);
-        if ($user_profile == '') {
-            $message = 'Đã có lỗi xảy ra khi upload file';
-        } else {
-            $user->setUserProfile($user_profile);
-            $_SESSION['user_data'][$user_id]['profile'] = $user_profile;
-        }
-    }
-    if (strlen($_POST['user_name']) > 2) {
-        $user->setUserName($_POST['user_name']);
-        $_SESSION['user_data'][$user_id]['name'] = $_POST['user_name'];
-    }
-    if ($user->getUserProfile() != $user_data['user_profile'] || $user->getUserName() != $user_data['user_name']) {
-        if ($user->updateData()) {
-            $message = 'Cập nhật thành công';
-            $user_data = $user->getUserDataById();
-        } else {
-            $message = 'Có lỗi xảy ra, vui lòng thử lại';
-        }
-    }
-}
-
-if (isset($_POST['edit-password'])) {
-    if (password_verify($_POST['current-password'], $user_data['user_password'])) {
-        if (strlen($_POST['new-password']) < 8) {
-            $message_pass = 'Mật khẩu mới không hợp lệ';
-        } else {
-            $user->setUserPassword(password_hash($_POST['new-password'], PASSWORD_DEFAULT));
-            if ($user->updateData()) {
-                $message_pass = 'Cập nhật thành công';
-                $user_data = $user->getUserDataById();
-            } else {
-                $message_pass = 'Có lỗi xảy ra, vui lòng thử lại';
-            }
-        }
-    } else {
-        $message_pass = 'Mật khẩu không chính xác';
-    }
-}
-
+editPasswordHandle();
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>Social - Network, Community and Event Theme</title>
-
-    <!-- Meta Tags -->
-    <meta charset="utf-8"/>
-    <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1, shrink-to-fit=no"
-    />
-    <meta name="author" content="Webestica.com"/>
-    <meta
-            name="description"
-            content="Bootstrap based News, Magazine and Blog Theme"
-    />
-    <!-- Google Font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com"/>
-    <link
-            rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-    />
-
-    <!-- Plugins CSS -->
-    <link
-            rel="stylesheet"
-            type="text/css"
-            href="assets/vendor/font-awesome/css/all.min.css"
-    />
-    <link
-            rel="stylesheet"
-            type="text/css"
-            href="assets/vendor/bootstrap-icons/bootstrap-icons.css"
-    />
-
-    <!-- Theme CSS -->
-    <link
-            id="style-switch"
-            rel="stylesheet"
-            type="text/css"
-            href="assets/css/style.css"
-    />
-    <script src="assets/vendor/jquery-3.6.1.min.js"></script>
-</head>
-
-<body>
+<?php include_once "part/header.php"?>
 <?php
 include_once "part/navbar.php";
 ?>
@@ -264,18 +169,4 @@ include_once "part/navbar.php";
     <!-- Container END -->
 </main>
 <!-- **************** MAIN CONTENT END **************** -->
-
-<!-- =======================
-JS libraries, plugins and custom scripts -->
-
-<!-- Bootstrap JS -->
-<script src="assets/vendor/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- Vendors -->
-<script src="assets/vendor/pswmeter/pswmeter.min.js"></script>
-
-<!-- Template Functions -->
-<script src="assets/js/functions.js"></script>
-<script src="assets/js/logout.js"></script>
-</body>
-</html>
+<?php include_once "part/signed_footer.php"?>
