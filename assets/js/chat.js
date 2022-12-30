@@ -31,6 +31,7 @@ function PrivateChatHandle(token) {
         };
 
         conn.onmessage = function (e) {
+            console.log(e.data);
             PrivateChatMessageHandle(e, chat_display);
         };
 
@@ -155,12 +156,29 @@ function MakeChatAreaInPrivateChat(id, name, status, profile) {
                 <form type="post" id="chat_form" class="d-sm-flex align-items-end">
                     <input type="text" id="chat_message" maxlength="1000" minlength="1" class="form-control mb-sm-0 mb-3"
                                                                 data-autoresize="" placeholder="Nhập tin nhắn"
-                                                                rows="1" />
+                                                                 autocomplete="off"/>
                     <button type="submit" class="btn btn-sm btn-primary ms-2">
                         <i class="fa-solid fa-paper-plane fs-6"></i>
                     </button>
                 </form>`;
     $('#chat-footer').html(footer);
+}
+
+function ReadMessageHandle(id) {
+    $.ajax({
+        url: "action.php",
+        method: "POST",
+        data: {
+            action: 'read_message',
+            from_user_id: id
+        },
+        error: function(e) {
+            console.error(e);
+        },
+        success: function (e) {
+            console.log(e);
+        }
+    })
 }
 
 function PrivateChatMessageHandle(e, chat_display) {
@@ -187,7 +205,7 @@ function PrivateChatMessageHandle(e, chat_display) {
     } else {
         data.pv_time = (new Date(data.pv_time * 1000)).toLocaleString("vi-VN");
         if ((data.pv_receiverId == $('#login_user_id').val() && userListSelect == data.pv_userId) || data.pv_from == 'me') {
-            if (userListSelect == data.pv_userId) $(`[data-userid='${data.pv_userId}']`).click();
+            if (userListSelect == data.pv_userId) ReadMessageHandle(data.pv_userId);
             let html = `            <!-- Chat name -->
                                     <div class="text-start small my-2">
                                         ${data.pv_from}
@@ -234,6 +252,7 @@ function PrivateChatMessageHandle(e, chat_display) {
                                             </div>
                                         </div>
                                     </div>`;
+                console.log(data.pv_from);
                 $('#chat_message').val('');
             }
 

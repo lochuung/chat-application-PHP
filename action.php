@@ -1,6 +1,6 @@
 <?php
 session_start();
-if (isset($_POST['action'])) {
+if (isset($_POST['action']) && isset($_SESSION['user_data'])) {
     require_once('database/ChatUser.php');
     require_once "database/PrivateChat.php";
     $user = new ChatUser();
@@ -18,8 +18,8 @@ if (isset($_POST['action'])) {
             echo json_encode(["status" => 1]);
         }
     } else if ($_POST['action'] == 'fetch_chat_data') {
-        $chat->setFromUserId($_POST['to_user_id']);
-        $chat->setToUserId($_POST['from_user_id']);
+        $chat->setFromUserId($_POST['from_user_id']);
+        $chat->setToUserId($_POST['to_user_id']);
         $chat->setStatus('Y');
 
         $chat->changeStatus();
@@ -31,5 +31,15 @@ if (isset($_POST['action'])) {
             $data[$key]['user_profile'] = $user_data['user_profile'];
         }
         echo json_encode($data);
+    } else if ($_POST['action'] == 'read_message') {
+        $user_id = '';
+        foreach ($_SESSION['user_data'] as $key => $value) {
+            $user_id = $value['id'];
+        }
+        $chat->setFromUserId($_POST['from_user_id']);
+        $chat->setToUserId($user_id);
+        $chat->setStatus('Y');
+        $chat->changeStatus();
+        json_encode(["status" => 1]);
     }
 }
