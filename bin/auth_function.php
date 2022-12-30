@@ -4,7 +4,6 @@ use PHPMailer\PHPMailer\Exception;
 
 require 'vendor/autoload.php';
 require_once dirname(__DIR__) . "/database/ChatUser.php";
-$user = new ChatUser();
 function LoginHandle()
 {
     global $error;
@@ -60,7 +59,6 @@ function RegisterHandle()
         } else if (strlen($_POST['user_password']) < 8) {
             $error = 'Mật khẩu không hợp lệ';
         } else {
-            require_once "database/ChatUser.php";
             $user = new ChatUser();
             $user->setUserName($_POST['user_name']);
             $user->setUserEmail($_POST['user_email']);
@@ -103,11 +101,11 @@ function RegisterHandle()
 
 function editPasswordInForgotHandle() {
     global $message_pass, $error;
-    $user = new ChatUser();
     if (isset($_POST['forgot']) && isset($_GET['code'])) {
         if (strlen($_POST['user_password']) < 8) {
             $message_pass = 'Mật khẩu mới không hợp lệ';
         } else {
+            $user = new ChatUser();
             $user->setUserVerificationCode($_GET['code']);
             $user_data = $user->getUserDataByVerificationCode();
             $user->setUserId($user_data['user_id']);
@@ -126,11 +124,12 @@ function editPasswordInForgotHandle() {
 }
 
 function sendResetPasswordCodeHandle() {
-    global $error, $user;
+    global $error;
     if (isset($_POST['forgot'])) {
         if (!filter_var($_POST['user_email'], FILTER_VALIDATE_EMAIL)) {
             $error = 'Email không hợp lệ';
         } else {
+            $user = new ChatUser();
             $user->setUserEmail($_POST['user_email']);
             $user_data = $user->getUserDataByEmail();
             if (!is_array($user_data) || count($user_data) == 0) {
