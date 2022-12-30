@@ -15,5 +15,5 @@ CREATE TABLE `chat_user_table`
     ENGINE = InnoDB
 ;
 ALTER TABLE `chat_user_table`
-    ADD COLUMN `user_token`         VARCHAR(250) NOT NULL AFTER `user_login_status`,
-    ADD COLUMN `user_connection_id` INT          NOT NULL AFTER `user_token`;
+    ADD COLUMN `user_token`         VARCHAR(250) AFTER `user_login_status`,
+    ADD COLUMN `user_connection_id` INT          AFTER `user_token`;
