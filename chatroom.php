@@ -26,6 +26,66 @@ $users_data = $user->getAllUserDataWithStatusCount();
         <!-- Container START -->
         <div class="container">
             <div class="row gx-0">
+                <div class="col-lg-4 col-xxl-3" id="chatTabs" role="tablist">
+                    <!-- Advanced filter responsive toggler END -->
+                    <div class="card card-body border-end-0 border-bottom-0 rounded-bottom-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h1 class="h5 mb-0">
+                                Người dùng
+                                <span class="badge bg-info bg-opacity-10 text-primary"><?php echo count($users_data) - 1; ?></span>
+                            </h1>
+                        </div>
+                    </div>
+
+                    <nav class="navbar navbar-light navbar-expand-lg mx-0">
+                        <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar">
+                            <!-- Offcanvas header -->
+                            <div class="offcanvas-header">
+                                <button type="button" class="btn-close text-reset ms-auto"
+                                        data-bs-dismiss="offcanvas"></button>
+                            </div>
+
+                            <!-- Offcanvas body -->
+                            <div class="offcanvas-body p-0">
+                                <div class="card card-chat-list rounded-end-lg-0 card-body border-end-lg-0 rounded-top-0">
+                                    <div class="mt-4 h-100">
+                                        <div class="chat-tab-list custom-scrollbar">
+                                            <ul class="nav flex-column nav-pills nav-pills-soft">
+                                                <?php
+                                                foreach ($users_data as $key => $user) {
+                                                    $status = 'status-online';
+                                                    if ($user['user_login_status'] == 'Logout')
+                                                        $status = 'status-offline';
+                                                    if ($user['user_id'] != $login_user_id) {
+                                                        $total_unread = '';
+                                                        if ($user['count_status'] > 0)
+                                                            $total_unread = $user['count_status'];
+                                                        echo '
+                          <li data-bs-dismiss="offcanvas">
+                            <a href="privatechat.php" data-privatechat="' . $user['user_id'] . '" class="private-select nav-link text-start">
+                              <div class="d-flex">
+                                <div id="receiver_status' . $user['user_id'] . '" class="flex-shrink-0 avatar me-2 ' . $status . '" data-status="' . $status . '">
+                                  <img class="avatar-img rounded-circle" src="' . $user['user_profile'] . '" alt="" />
+                                </div>
+                                <div class="flex-grow-1 my-auto d-block">
+                                  <h6 class="mb-0 mt-1">' . $user['user_name'] . '</h6>
+                                  <span id="receiver_notification' . $user['user_id'] . '" class="badge bg-danger badge-pill">' . $total_unread . '</span>
+                                </div>
+                              </div>
+                            </a>
+                          </li>';
+                                                    }
+                                                }
+                                                ?>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <!-- Chat list tab END -->
+                                </div>
+                            </div>
+                        </div>
+                    </nav>
+                </div>
                 <!-- Chat conversation START -->
                 <div class="col-lg-8 col-xxl-9">
                     <div class="card card-chat rounded-start-lg-0 border-start-lg-0">
@@ -119,95 +179,7 @@ $users_data = $user->getAllUserDataWithStatusCount();
                         </div>
                     </div>
                 </div><!-- Sidebar START -->
-                <div class="col-lg-4 col-xxl-3" id="chatTabs" role="tablist">
-                    <!-- Divider -->
-                    <div class="d-flex align-items-center mb-4 d-lg-none">
-                        <button class="border-0 bg-transparent" type="button" data-bs-toggle="offcanvas"
-                                data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
-                            <i class="btn btn-primary fw-bold fa-solid fa-sliders"></i>
-                            <span class="h6 mb-0 fw-bold d-lg-none ms-2">Chats</span>
-                        </button>
-                    </div>
-                    <!-- Advanced filter responsive toggler END -->
-                    <div class="card card-body border-end-0 border-bottom-0 rounded-bottom-0">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h1 class="h5 mb-0">
-                                Người dùng
-                                <span class="badge bg-info bg-opacity-10 text-primary"><?php echo count($users_data) - 1; ?></span>
-                            </h1>
-                            <!-- Chat new create message item START -->
-                            <!--                        <div class="dropend position-relative">-->
-                            <!--                            <div class="nav">-->
-                            <!--                                <a class="icon-md rounded-circle btn btn-sm btn-primary-soft nav-link toast-btn"-->
-                            <!--                                   data-target="chatToast" href="#">-->
-                            <!--                                    <i class="bi bi-pencil-square"></i>-->
-                            <!--                                </a>-->
-                            <!--                            </div>-->
-                            <!--                        </div>-->
-                            <!-- Chat new create message item END -->
-                        </div>
-                    </div>
 
-                    <nav class="navbar navbar-light navbar-expand-lg mx-0">
-                        <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar">
-                            <!-- Offcanvas header -->
-                            <div class="offcanvas-header">
-                                <button type="button" class="btn-close text-reset ms-auto"
-                                        data-bs-dismiss="offcanvas"></button>
-                            </div>
-
-                            <!-- Offcanvas body -->
-                            <div class="offcanvas-body p-0">
-                                <div class="card card-chat-list rounded-end-lg-0 card-body border-end-lg-0 rounded-top-0">
-                                    <!-- Search chat START -->
-                                    <!--                                <form class="position-relative">-->
-                                    <!--                                    <input class="form-control py-2" type="search" placeholder="Empty input"-->
-                                    <!--                                           aria-label="Search"/>-->
-                                    <!--                                    <button class="btn bg-transparent text-secondary px-2 py-0 position-absolute top-50 end-0 translate-middle-y"-->
-                                    <!--                                            type="submit">-->
-                                    <!--                                        <i class="bi bi-search fs-5"></i>-->
-                                    <!--                                    </button>-->
-                                    <!--                                </form>-->
-                                    <!-- Search chat END -->
-                                    <!-- Chat list tab START -->
-                                    <div class="mt-4 h-100">
-                                        <div class="chat-tab-list custom-scrollbar">
-                                            <ul class="nav flex-column nav-pills nav-pills-soft">
-                                                <?php
-                                                foreach ($users_data as $key => $user) {
-                                                    $status = 'status-online';
-                                                    if ($user['user_login_status'] == 'Logout')
-                                                        $status = 'status-offline';
-                                                    if ($user['user_id'] != $login_user_id) {
-                                                        $total_unread = '';
-                                                        if ($user['count_status'] > 0)
-                                                            $total_unread = $user['count_status'];
-                                                        echo '
-                          <li data-bs-dismiss="offcanvas">
-                            <a href="privatechat.php" class="nav-link text-start">
-                              <div class="d-flex">
-                                <div id="receiver_status' . $user['user_id'] . '" class="flex-shrink-0 avatar me-2 ' . $status . '" data-status="' . $status . '">
-                                  <img class="avatar-img rounded-circle" src="' . $user['user_profile'] . '" alt="" />
-                                </div>
-                                <div class="flex-grow-1 my-auto d-block">
-                                  <h6 class="mb-0 mt-1">' . $user['user_name'] . '</h6>
-                                  <span id="receiver_notification' . $user['user_id'] . '" class="badge bg-danger badge-pill">' . $total_unread . '</span>
-                                </div>
-                              </div>
-                            </a>
-                          </li>';
-                                                    }
-                                                }
-                                                ?>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                    <!-- Chat list tab END -->
-                                </div>
-                            </div>
-                        </div>
-                    </nav>
-                </div>
             </div>
         </div>
     </main>

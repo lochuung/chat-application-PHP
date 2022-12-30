@@ -43,16 +43,6 @@ $count_online_user = $user->countOnlineUser();
                                 <span class="badge bg-success bg-opacity-10 text-success"
                                       id="online-user"><?php echo($count_online_user - 1) ?></span>
                             </h1>
-                            <!-- Chat new create message item START -->
-                            <!--                        <div class="dropend position-relative">-->
-                            <!--                            <div class="nav">-->
-                            <!--                                <a class="icon-md rounded-circle btn btn-sm btn-primary-soft nav-link toast-btn"-->
-                            <!--                                   data-target="chatToast" href="#">-->
-                            <!--                                    <i class="bi bi-pencil-square"></i>-->
-                            <!--                                </a>-->
-                            <!--                            </div>-->
-                            <!--                        </div>-->
-                            <!-- Chat new create message item END -->
                         </div>
                     </div>
 
@@ -67,17 +57,6 @@ $count_online_user = $user->countOnlineUser();
                             <!-- Offcanvas body -->
                             <div class="offcanvas-body p-0">
                                 <div class="card card-chat-list rounded-end-lg-0 card-body border-end-lg-0 rounded-top-0">
-                                    <!-- Search chat START -->
-                                    <!--                                <form class="position-relative">-->
-                                    <!--                                    <input class="form-control py-2" type="search" placeholder="Empty input"-->
-                                    <!--                                           aria-label="Search"/>-->
-                                    <!--                                    <button class="btn bg-transparent text-secondary px-2 py-0 position-absolute top-50 end-0 translate-middle-y"-->
-                                    <!--                                            type="submit">-->
-                                    <!--                                        <i class="bi bi-search fs-5"></i>-->
-                                    <!--                                    </button>-->
-                                    <!--                                </form>-->
-                                    <!-- Search chat END -->
-                                    <!-- Chat list tab START -->
                                     <div class="mt-4 h-100">
                                         <div class="chat-tab-list custom-scrollbar">
                                             <ul class="nav flex-column nav-pills nav-pills-soft">
@@ -160,5 +139,16 @@ $count_online_user = $user->countOnlineUser();
     <script src="assets/js/chat.js"></script>
     <script>
         PrivateChatHandle("<?php echo $token ?>");
+        <?php
+        if (isset($_SESSION['private_select'])) {
+        ?>
+        $(document).ready(function () {
+            $(`[data-userid='${<?php echo $_SESSION['private_select'] ?>}']`).click();
+            $(`[data-userid='${<?php echo $_SESSION['private_select'] ?>}']`).addClass('active');
+        })
+        <?php
+            unset($_SESSION['private_select']);
+        }
+        ?>
     </script>
 <?php include_once "part/signed_footer.php" ?>

@@ -18,8 +18,8 @@ if (isset($_POST['action']) && isset($_SESSION['user_data'])) {
             echo json_encode(["status" => 1]);
         }
     } else if ($_POST['action'] == 'fetch_chat_data') {
-        $chat->setFromUserId($_POST['from_user_id']);
-        $chat->setToUserId($_POST['to_user_id']);
+        $chat->setFromUserId($_POST['to_user_id']);
+        $chat->setToUserId($_POST['from_user_id']);
         $chat->setStatus('Y');
 
         $chat->changeStatus();
@@ -41,5 +41,8 @@ if (isset($_POST['action']) && isset($_SESSION['user_data'])) {
         $chat->setStatus('Y');
         $chat->changeStatus();
         json_encode(["status" => 1]);
+    } else if ($_POST['action'] == 'private_select') {
+        $_SESSION['private_select'] = $_POST['select_id'];
+        echo json_encode(["status" => 1]);
     }
 }

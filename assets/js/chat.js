@@ -12,12 +12,28 @@ function ChatRoomHandle(token) {
         conn.onopen = function () {
             console.log("Connection established!");
         };
-
         conn.onmessage = function (e) {
             console.log(e.data);
             ChatRoomMessageHandle(e, chat_display);
         }
         ChatRoomSubmitChat(conn);
+        $('.private-select').click(function (e) {
+            e.preventDefault();
+            $.ajax({
+                url: "action.php",
+                method: "POST",
+                data: {
+                    action: 'private_select',
+                    select_id: this.dataset.privatechat,
+                },
+                success: function (e) {
+                    const data = JSON.parse(e);
+                    if (data.status === 1) {
+                        location.href = 'privatechat.php';
+                    }
+                }
+            })
+        });
 
     })
 }
@@ -31,7 +47,6 @@ function PrivateChatHandle(token) {
         };
 
         conn.onmessage = function (e) {
-            console.log(e.data);
             PrivateChatMessageHandle(e, chat_display);
         };
 
@@ -72,7 +87,6 @@ function ChatRoomMessageHandle(e, chat_display) {
         if (count == '') {
             count = 0;
         }
-        console.log(`#receiver_notification${data.pv_userId}`);
         count++;
         notifi.text(count);
     } else {
@@ -94,7 +108,7 @@ function ChatRoomMessageHandle(e, chat_display) {
                                             <div class="w-100">
                                                 <div class="d-flex flex-column align-items-start">
                                                     <div
-                                                            class="bg-light text-secondary p-2 px-3 rounded-2"
+                                                            class="bg-light text-break text-secondary p-2 px-3 rounded-2"
                                                     >
                                                         ${data.msg}
                                                     </div>
@@ -110,7 +124,7 @@ function ChatRoomMessageHandle(e, chat_display) {
                                         <div class="w-100">
                                             <div class="d-flex flex-column align-items-end">
                                                 <div
-                                                        class="bg-primary text-white p-2 px-3 rounded-2"
+                                                        class="bg-primary text-break text-white p-2 px-3 rounded-2"
                                                 >
                                                     ${data.msg}
                                                 </div>
@@ -175,9 +189,6 @@ function ReadMessageHandle(id) {
         error: function(e) {
             console.error(e);
         },
-        success: function (e) {
-            console.log(e);
-        }
     })
 }
 
@@ -223,7 +234,7 @@ function PrivateChatMessageHandle(e, chat_display) {
                                             <div class="w-100">
                                                 <div class="d-flex flex-column align-items-start">
                                                     <div
-                                                            class="bg-light text-secondary p-2 px-3 rounded-2"
+                                                            class="bg-light text-break text-secondary p-2 px-3 rounded-2"
                                                     >
                                                         ${data.pv_msg}
                                                     </div>
@@ -239,7 +250,7 @@ function PrivateChatMessageHandle(e, chat_display) {
                                         <div class="w-100">
                                             <div class="d-flex flex-column align-items-end">
                                                 <div
-                                                        class="bg-primary text-white p-2 px-3 rounded-2"
+                                                        class="bg-primary text-break text-white p-2 px-3 rounded-2"
                                                 >
                                                     ${data.pv_msg}
                                                 </div>
@@ -252,7 +263,6 @@ function PrivateChatMessageHandle(e, chat_display) {
                                             </div>
                                         </div>
                                     </div>`;
-                console.log(data.pv_from);
                 $('#chat_message').val('');
             }
 
@@ -266,7 +276,6 @@ function PrivateChatMessageHandle(e, chat_display) {
             if (count == '') {
                 count = 0;
             }
-            console.log(`#receiver_notification${data.pv_userId}`);
             count++;
             notifi.text(count);
         }
@@ -343,7 +352,7 @@ function FetchChatDataInPrivateChat(id, chat_display) {
                                             <div class="w-100">
                                                 <div class="d-flex flex-column align-items-start">
                                                     <div
-                                                            class="bg-light text-secondary p-2 px-3 rounded-2"
+                                                            class="bg-light text-break text-secondary p-2 px-3 rounded-2"
                                                     >
                                                         ${data[i]["chat_message"]}
                                                     </div>
@@ -359,7 +368,7 @@ function FetchChatDataInPrivateChat(id, chat_display) {
                                         <div class="w-100">
                                             <div class="d-flex flex-column align-items-end">
                                                 <div
-                                                        class="bg-primary text-white p-2 px-3 rounded-2"
+                                                        class="bg-primary text-break text-white p-2 px-3 rounded-2"
                                                 >
                                                     ${data[i]["chat_message"]}
                                                 </div>
